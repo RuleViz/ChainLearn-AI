@@ -1,0 +1,5 @@
+{
+  "name": "ChainLearn AI",
+  "description": "A chain-of-thought workflow learning assistant that breaks down complex topics into actionable nodes, executing them sequentially with context-aware summarization.",
+  "requestFramePermissions": []
+}
