@@ -7,6 +7,7 @@ import {
   formatDuration 
 } from '../services/learningStats';
 import { DailyLearningStats, LearningSession, LearningStatsSummary } from '../types';
+import { useTranslation } from '../contexts/LanguageContext';
 
 interface CalendarProps {
   isOpen: boolean;
@@ -30,15 +31,21 @@ const getFirstDayOfMonth = (year: number, month: number): number => {
   return new Date(year, month, 1).getDay();
 };
 
-const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
-const MONTHS = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+const WEEKDAYS_ZH = ['日', '一', '二', '三', '四', '五', '六'];
+const WEEKDAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS_ZH = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export const Calendar: React.FC<CalendarProps> = ({ isOpen, onClose }) => {
+  const { language, t } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [dailyStats, setDailyStats] = useState<DailyLearningStats[]>([]);
   const [summary, setSummary] = useState<LearningStatsSummary | null>(null);
   const [selectedDaySessions, setSelectedDaySessions] = useState<LearningSession[]>([]);
+
+  const WEEKDAYS = language === 'zh' ? WEEKDAYS_ZH : WEEKDAYS_EN;
+  const MONTHS = language === 'zh' ? MONTHS_ZH : MONTHS_EN;
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -109,7 +116,7 @@ export const Calendar: React.FC<CalendarProps> = ({ isOpen, onClose }) => {
             <div className="p-2 bg-neutral-100 rounded-lg">
               <CalendarIcon className="w-5 h-5 text-neutral-600" />
             </div>
-            <h2 className="text-lg font-semibold text-neutral-900">学习日历</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">{t('calendar')}</h2>
           </div>
           <button
             onClick={onClose}
@@ -125,26 +132,26 @@ export const Calendar: React.FC<CalendarProps> = ({ isOpen, onClose }) => {
             <div className="lg:col-span-1 space-y-3">
               <StatCard
                 icon={<Clock className="w-5 h-5" />}
-                label="总学习时长"
-                value={summary ? formatDuration(summary.totalDuration) : '0分钟'}
+                label={t('stats_total_duration')}
+                value={summary ? formatDuration(summary.totalDuration) : '0'}
                 color="neutral"
               />
               <StatCard
                 icon={<Target className="w-5 h-5" />}
-                label="学习次数"
-                value={`${summary?.totalSessions || 0} 次`}
+                label={t('stats_total_sessions')}
+                value={`${summary?.totalSessions || 0}`}
                 color="neutral"
               />
               <StatCard
                 icon={<Flame className="w-5 h-5" />}
-                label="当前连续"
-                value={`${summary?.currentStreak || 0} 天`}
+                label={t('stats_current_streak')}
+                value={`${summary?.currentStreak || 0} ${t('stats_days')}`}
                 color="orange"
               />
               <StatCard
                 icon={<TrendingUp className="w-5 h-5" />}
-                label="最长连续"
-                value={`${summary?.longestStreak || 0} 天`}
+                label={t('stats_longest_streak')}
+                value={`${summary?.longestStreak || 0} ${t('stats_days')}`}
                 color="green"
               />
             </div>

@@ -12,6 +12,7 @@ import { Notebook } from './components/Notebook';
 import { startSession, endSession, updateSessionMessageCount, accumulateSessionTime, saveWorkflowState } from './services/learningStats';
 import { addNote, findNoteByContent, deleteNoteByContent } from './services/notebookService';
 import { ExpertRouterService } from './services/expertService';
+import { useTranslation } from './contexts/LanguageContext';
 
 const DEFAULT_CONFIG: AIConfig = {
   provider: 'OPENAI',
@@ -25,6 +26,7 @@ const DEFAULT_CONFIG: AIConfig = {
 };
 
 const App: React.FC = () => {
+  const { t } = useTranslation();
   const [state, setState] = useState<WorkflowState>({
     topic: '',
     nodes: [],
@@ -552,10 +554,10 @@ const App: React.FC = () => {
               <div className="max-w-xl w-full text-center space-y-8">
                 <div className="space-y-3">
                   <h2 className="text-3xl md:text-4xl font-semibold text-neutral-900">
-                    你想学习什么？
+                    {t('home_title')}
                   </h2>
                   <p className="text-neutral-500 text-base">
-                    输入一个主题，AI 将为你构建结构化的学习路径
+                    {t('home_subtitle')}
                   </p>
                 </div>
 
@@ -563,7 +565,7 @@ const App: React.FC = () => {
                   <div className="bg-white rounded-xl p-1 flex items-center border border-neutral-200 shadow-sm hover:border-neutral-300 transition-colors">
                     <input
                       type="text"
-                      placeholder="例如：量子物理、React Hooks、法国大革命..."
+                      placeholder={t('home_placeholder')}
                       className="flex-1 bg-transparent border-none outline-none text-neutral-900 px-4 py-3 text-base placeholder:text-neutral-400"
                       value={state.topic}
                       onChange={(e) => setState(prev => ({ ...prev, topic: e.target.value }))}
@@ -586,7 +588,7 @@ const App: React.FC = () => {
                 )}
 
                 <div className="text-xs text-neutral-400">
-                  {aiConfig.activeProviderId ? '已配置 AI 服务' : '请先在设置中配置 AI 服务商'}
+                  {aiConfig.activeProviderId ? t('home_ai_configured') : t('home_ai_not_configured')}
                 </div>
               </div>
             </div>
@@ -601,8 +603,8 @@ const App: React.FC = () => {
                 <div className="w-2 h-2 bg-neutral-400 rounded-full loading-dot"></div>
               </div>
               <div className="text-center space-y-1">
-                <h3 className="text-lg font-medium text-neutral-900">正在分析 "{state.topic}"</h3>
-                <p className="text-neutral-500 text-sm">构建学习路径中...</p>
+                <h3 className="text-lg font-medium text-neutral-900">{t('analyzing_topic')} "{state.topic}"</h3>
+                <p className="text-neutral-500 text-sm">{t('building_path')}</p>
               </div>
             </div>
           )}
@@ -617,7 +619,7 @@ const App: React.FC = () => {
                 <div className="px-6 py-4 border-b border-neutral-200 bg-white flex justify-between items-center">
                   <div>
                     <div className="text-xs text-neutral-500 font-medium uppercase tracking-wider mb-1">
-                      第 {state.activeNodeIndex + 1} 节 · {activeNode.title}
+                      {t('section', state.activeNodeIndex + 1)} · {activeNode.title}
                     </div>
                     <div className="text-sm text-neutral-600">{activeNode.description}</div>
                   </div>
@@ -632,7 +634,7 @@ const App: React.FC = () => {
                             className="flex items-center gap-2 px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg text-sm transition-colors"
                           >
                             <ClipboardCheck className="w-4 h-4" />
-                            <span>知识自测</span>
+                            <span>{t('knowledge_quiz')}</span>
                           </button>
                         ) : (
                           <button
@@ -643,12 +645,12 @@ const App: React.FC = () => {
                             {isGeneratingQuiz ? (
                               <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                <span>生成中...</span>
+                                <span>{t('generating_quiz')}</span>
                               </>
                             ) : (
                               <>
                                 <ClipboardCheck className="w-4 h-4" />
-                                <span>知识自测</span>
+                                <span>{t('knowledge_quiz')}</span>
                               </>
                             )}
                           </button>
@@ -657,7 +659,7 @@ const App: React.FC = () => {
                           onClick={handleCompleteNode}
                           className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-neutral-50 text-neutral-700 rounded-lg text-sm border border-neutral-200 transition-colors"
                         >
-                          <span>完成本节</span>
+                          <span>{t('complete_section')}</span>
                           <ChevronRight className="w-4 h-4" />
                         </button>
                       </>
@@ -665,13 +667,13 @@ const App: React.FC = () => {
                     {activeNode.status === NodeStatus.SUMMARIZING && (
                       <div className="flex items-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-600 rounded-lg text-sm">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>总结中...</span>
+                        <span>{t('summarizing')}</span>
                       </div>
                     )}
                     {activeNode.status === NodeStatus.COMPLETED && (
                       <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg text-sm">
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>已完成</span>
+                        <span>{t('completed')}</span>
                       </div>
                     )}
                   </div>
@@ -710,7 +712,7 @@ const App: React.FC = () => {
                               ? 'text-amber-500 bg-amber-50'
                               : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100'
                               }`}
-                            title={isSaved ? '从笔记本移除' : '保存到笔记本'}
+                            title={isSaved ? t('remove_from_notebook') : t('save_to_notebook')}
                           >
                             <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-amber-500' : ''}`} />
                           </button>
@@ -739,7 +741,7 @@ const App: React.FC = () => {
                       <textarea
                         ref={inputRef}
                         className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-neutral-900 focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors placeholder:text-neutral-400 resize-none"
-                        placeholder="输入问题或回答... (Shift+Enter 换行, Enter 发送)"
+                        placeholder={t('input_placeholder')}
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyDown={(e) => {
@@ -768,7 +770,7 @@ const App: React.FC = () => {
                 <div className="p-5 border-b border-neutral-200">
                   <h3 className="text-neutral-900 font-semibold flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-neutral-500" />
-                    学习目标
+                    {t('learning_goals')}
                   </h3>
                 </div>
                 <div className="p-5 overflow-y-auto flex-1">
@@ -786,16 +788,16 @@ const App: React.FC = () => {
                   ) : (
                     <div className="flex flex-col items-center justify-center h-40 text-neutral-400 text-sm gap-2">
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      生成学习大纲...
+                      {t('generating_outline')}
                     </div>
                   )}
                 </div>
 
                 {/* Context Info */}
                 <div className="p-5 border-t border-neutral-200 bg-white">
-                  <div className="text-xs text-neutral-500 uppercase tracking-wider font-semibold mb-2">上下文</div>
+                  <div className="text-xs text-neutral-500 uppercase tracking-wider font-semibold mb-2">{t('context')}</div>
                   <div className="text-xs text-neutral-500 line-clamp-4 leading-relaxed">
-                    {state.contextSummary ? state.contextSummary : "从头开始，暂无上下文。"}
+                    {state.contextSummary ? state.contextSummary : t('no_context')}
                   </div>
                 </div>
               </div>
@@ -809,9 +811,9 @@ const App: React.FC = () => {
                 <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto">
                   <Sparkles className="w-10 h-10 text-green-600" />
                 </div>
-                <h2 className="text-3xl font-semibold text-neutral-900">学习完成！</h2>
+                <h2 className="text-3xl font-semibold text-neutral-900">{t('learning_complete')}</h2>
                 <p className="text-neutral-500">
-                  你已成功完成 "{state.topic}" 的所有学习节点。AI 已为每个对话生成总结以帮助记忆。
+                  {t('learning_complete_desc', state.topic)}
                 </p>
                 <button
                   onClick={() => setState({
@@ -824,7 +826,7 @@ const App: React.FC = () => {
                   })}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors"
                 >
-                  开始新主题
+                  {t('start_new_topic')}
                 </button>
               </div>
             </div>

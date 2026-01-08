@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, XCircle, Trophy, RefreshCw } from 'lucide-react';
+import { useTranslation } from '../contexts/LanguageContext';
 
 export interface QuizQuestion {
   question: string;
@@ -16,6 +17,7 @@ interface QuizModalProps {
 }
 
 export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions, nodeTitle }) => {
+  const { t } = useTranslation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -81,7 +83,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
         {/* Header */}
         <div className="p-6 border-b border-neutral-200 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-neutral-900">知识自测</h2>
+            <h2 className="text-xl font-semibold text-neutral-900">{t('quiz_title')}</h2>
             <p className="text-sm text-neutral-500 mt-1">{nodeTitle}</p>
           </div>
           <button
@@ -99,8 +101,8 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
               {/* Progress */}
               <div className="mb-6">
                 <div className="flex justify-between text-sm text-neutral-500 mb-2">
-                  <span>第 {currentQuestionIndex + 1} 题，共 {questions.length} 题</span>
-                  <span>得分: {score}/{answeredQuestions.filter(a => a).length}</span>
+                  <span>{t('quiz_question')} {currentQuestionIndex + 1} / {questions.length}</span>
+                  <span>{t('quiz_score')}: {score}/{answeredQuestions.filter(a => a).length}</span>
                 </div>
                 <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
                   <div
@@ -157,7 +159,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
               {/* Explanation */}
               {showExplanation && (
                 <div className="mb-6 p-4 bg-neutral-50 border border-neutral-200 rounded-xl">
-                  <h4 className="text-sm font-semibold text-neutral-700 mb-2">解析</h4>
+                  <h4 className="text-sm font-semibold text-neutral-700 mb-2">{t('quiz_explanation')}</h4>
                   <p className="text-neutral-600 text-sm leading-relaxed">{currentQuestion.explanation}</p>
                 </div>
               )}
@@ -170,14 +172,14 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
                     disabled={selectedAnswer === null}
                     className="flex-1 py-3 bg-neutral-900 hover:bg-neutral-800 disabled:bg-neutral-100 disabled:text-neutral-400 text-white rounded-xl font-medium transition-colors"
                   >
-                    提交答案
+                    {t('quiz_submit')}
                   </button>
                 ) : (
                   <button
                     onClick={handleNextQuestion}
                     className="flex-1 py-3 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl font-medium transition-colors"
                   >
-                    {isLastQuestion ? '查看结果' : '下一题'}
+                    {isLastQuestion ? t('quiz_finish') : t('quiz_next')}
                   </button>
                 )}
               </div>
@@ -194,7 +196,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
               </div>
 
               <h3 className="text-2xl font-semibold text-neutral-900 mb-2">
-                {isPerfect ? '完美掌握！' : scorePercentage >= 60 ? '不错的表现！' : '继续加油！'}
+                {isPerfect ? t('quiz_correct') : scorePercentage >= 60 ? '👍' : '💪'}
               </h3>
               
               <div className="text-4xl font-bold text-neutral-900 mb-4">
@@ -202,11 +204,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
               </div>
 
               <p className="text-neutral-500 mb-8">
-                {isPerfect 
-                  ? '你已经完全掌握了这个知识点！' 
-                  : scorePercentage >= 60 
-                    ? '你对这个知识点有了很好的理解。' 
-                    : '建议复习相关知识点后再次测试。'}
+                {scorePercentage}%
               </p>
 
               <div className="flex gap-3 justify-center">
@@ -215,13 +213,13 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
                   className="flex items-center gap-2 px-6 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl transition-colors"
                 >
                   <RefreshCw className="w-4 h-4" />
-                  <span>重新测试</span>
+                  <span>{t('quiz_retry')}</span>
                 </button>
                 <button
                   onClick={handleClose}
                   className="px-6 py-3 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl transition-colors"
                 >
-                  完成
+                  {t('close')}
                 </button>
               </div>
             </div>

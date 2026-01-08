@@ -1,137 +1,138 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+<img width="180" height="180" alt="ChainLearn AI Logo" src="logo_v2.png" />
 </div>
 
-# ChainLearn AI - 智能学习平台
+# ChainLearn AI - Intelligent Learning Platform
 
-一个基于 AI 的交互式学习平台，通过节点式对话系统和可视化工具，帮助用户高效掌握知识。
+🇨🇳 [中文文档](README_zh-CN.md)
+
+An AI-powered interactive learning platform that helps users efficiently master knowledge through node-based dialogue systems and visualization tools.
 
 View your app in AI Studio: https://ai.studio/apps/drive/1Q3SKXH21XXO0Dp9thuukmGxSfMO1Qyia
 
-## ✨ 核心功能
+## ✨ Key Features
 
-### 🎯 节点式学习链
-- AI 自动将学习主题分解为多个逻辑节点
-- 每个节点包含结构化的学习目标（Micro-steps）
-- 上下文累积：前一节点的知识自动传递到下一节点
+### 🎯 Node-Based Learning Chain
+- Automatically breaks down learning topics into multiple logical nodes
+- Each node contains structured learning objectives (Micro-steps)
+- Context accumulation: Knowledge from previous nodes is automatically passed to the next
 
-### 📊 可视化知识图谱 (NEW!)
-- **自动生成 Mermaid 图表**：AI 在讲解复杂概念时自动输出可视化图表
-- **支持多种图表类型**：
-  - 流程图 (Flowchart) - 展示流程、算法
-  - 时序图 (Sequence Diagram) - 展示交互过程
-  - 类图 (Class Diagram) - 展示对象关系
-  - 思维导图 (Mindmap) - 展示概念层次
-- **暗黑主题适配**：图表颜色完美适配应用主题
-- **全屏查看**：支持大图全屏浏览
+### 📊 Visual Knowledge Graph
+- **Auto-generated Mermaid Charts**: AI automatically outputs visual charts when explaining complex concepts
+- **Supported Chart Types**:
+  - Flowchart - Demonstrate processes and algorithms
+  - Sequence Diagram - Show interaction processes
+  - Class Diagram - Display object relationships
+  - Mindmap - Visualize concept hierarchies
+- **Dark Mode Adapted**: Chart colors perfectly match the application theme
+- **Fullscreen View**: Support for viewing large charts in fullscreen
 
-### 🎓 智能实战测验 (NEW!)
-- **自动生成测验**：基于对话内容生成 3-5 道选择题
-- **即时反馈**：选择答案后立即显示对错和详细解析
-- **游戏化体验**：
-  - 实时得分显示
-  - 完美掌握动效
-  - 鼓励性反馈
-- **可重复测试**：巩固知识，直到完全掌握
+### 🎓 Smart Practice Quizzes
+- **Auto-generated Quizzes**: Generates 3-5 multiple-choice questions based on node content
+- **Instant Feedback**: Immediate indication of correctness with detailed explanations after selection
+- **Gamified Experience**:
+  - Real-time score display
+  - "Perfect Mastery" animations
+  - Encouraging feedback
+- **Repeatable**: Reinforce knowledge until fully mastered
 
-### 📚 学习管理
-- **学习历史**：记录所有学习会话
-- **学习日历**：可视化学习进度和热力图
-- **继续学习**：随时恢复之前的学习状态
+### 📚 Learning Management
+- **Learning History**: Record all learning sessions
+- **Learning Calendar**: Visualize learning progress and heatmaps
+- **Resume Learning**: Pick up right where you left off at any time
 
-### 🤖 多 AI 提供商支持
-- Google Gemini (默认)
-- OpenAI 兼容 API
-- 自定义 API 端点
+### 🤖 Multi-Provider AI Support
+- Google Gemini (Default)
+- OpenAI Compatible API
+- Custom API Endpoints
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-**前置要求:** Node.js
+**Prerequisites:** Node.js
 
-1. 安装依赖:
+1. Install dependencies:
    ```bash
    npm install
    ```
 
-2. 配置 API Key:
-   - 在 [.env.local](.env.local) 中设置 `GEMINI_API_KEY`
-   - 或在应用设置中配置自定义 AI 提供商
+2. Configure API Key:
+   - Set `GEMINI_API_KEY` in [.env.local](.env.local)
+   - Or configure a custom AI provider in the application settings
 
-3. 启动应用:
+3. Start the application:
    ```bash
    npm run dev
    ```
 
-4. 构建生产版本:
+4. Build for production:
    ```bash
    npm run build
    ```
 
-## 📖 使用指南
+## 📖 User Guide
 
-### 开始学习
-1. 在首页输入你想学习的主题（例如："React Hooks"、"量子物理"）
-2. AI 会自动生成学习路径，分解为多个节点
-3. 逐个节点进行交互式学习
+### Start Learning
+1. Enter the topic you want to learn on the homepage (e.g., "React Hooks", "Quantum Physics")
+2. AI will automatically generate a learning path, broken down into multiple nodes
+3. Engage in interactive learning node by node
 
-### 触发可视化图表
-询问需要可视化的问题，例如：
-- "解释 TCP 三次握手流程"
-- "React 渲染机制是什么"
-- "快速排序算法的步骤"
+### Trigger Visualizations
+Ask questions that require visualization, such as:
+- "Explain the TCP 3-way handshake process"
+- "What is the React rendering mechanism?"
+- "Steps of the Quick Sort algorithm"
 
-AI 会自动生成相应的图表帮助理解。
+AI will automatically generate corresponding charts to aid understanding.
 
-### 使用测验功能
-1. 在学习节点中与 AI 对话（至少 2 轮）
-2. 点击"知识自测"按钮
-3. 完成测验并查看得分
-4. 根据反馈决定是否继续学习或进入下一节点
+### Take Quizzes
+1. Chat with the AI in a learning node (at least 2 turns)
+2. Click the "Test Knowledge" button
+3. Complete the quiz and view your score
+4. Decide whether to review or proceed to the next node based on feedback
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 chainlearn-ai/
-├── components/          # React 组件
-│   ├── Calendar.tsx     # 学习日历
-│   ├── LearningHistory.tsx  # 学习历史
-│   ├── MermaidBlock.tsx     # Mermaid 图表渲染 (NEW)
-│   ├── QuizModal.tsx        # 测验界面 (NEW)
-│   ├── SimpleMarkdown.tsx   # Markdown 渲染
+├── components/          # React Components
+│   ├── Calendar.tsx     # Learning Calendar
+│   ├── LearningHistory.tsx  # Learning History
+│   ├── MermaidBlock.tsx     # Mermaid Chart Rendering
+│   ├── QuizModal.tsx        # Quiz Interface
+│   ├── SimpleMarkdown.tsx   # Markdown Rendering
 │   └── ...
-├── services/           # 业务逻辑
-│   ├── geminiService.ts     # AI 服务
-│   ├── learningStats.ts     # 学习统计
-│   └── expertService.ts     # 专家路由
-├── docs/              # 文档
-│   ├── new-features.md      # 新功能说明 (NEW)
-│   ├── testing-guide.md     # 测试指南 (NEW)
+├── services/           # Business Logic
+│   ├── geminiService.ts     # AI Service
+│   ├── learningStats.ts     # Learning Stats
+│   └── expertService.ts     # Expert Routing
+├── docs/              # Documentation
+│   ├── new-features.md      # New Features Guide
+│   ├── testing-guide.md     # Testing Guide
 │   └── ...
-├── App.tsx            # 主应用
-├── types.ts           # TypeScript 类型定义
+├── App.tsx            # Main Application
+├── types.ts           # TypeScript Type Definitions
 └── ...
 ```
 
-## 🎨 技术栈
+## 🎨 Tech Stack
 
-- **前端框架**: React 19 + TypeScript
-- **构建工具**: Vite
-- **AI 服务**: Google Gemini API / OpenAI Compatible API
-- **可视化**: Mermaid.js
-- **图标**: Lucide React
-- **样式**: Tailwind CSS
+- **Frontend Framework**: React 19 + TypeScript
+- **Build Tool**: Vite
+- **AI Service**: Google Gemini API / OpenAI Compatible API
+- **Visualization**: Mermaid.js
+- **Icons**: Lucide React
+- **Styling**: Tailwind CSS
 
-## 📚 文档
+## 📚 Documentation
 
-- [新功能说明](docs/new-features.md) - 详细的功能介绍
-- [测试指南](docs/testing-guide.md) - 如何测试新功能
-- [更新日志](CHANGELOG.md) - 版本更新记录
-- [系统架构](docs/systemArchitecture.md) - 技术架构说明
+- [New Features](docs/new-features.md) - Detailed feature introduction
+- [Testing Guide](docs/testing-guide.md) - How to test new functions
+- [Changelog](CHANGELOG.md) - Version update records
+- [System Architecture](docs/systemArchitecture.md) - Technical architecture description
 
-## 🤝 贡献
+## 🤝 Contribution
 
-欢迎提交 Issue 和 Pull Request！
+Issues and Pull Requests are welcome!
 
-## 📄 许可证
+## 📄 License
 
 MIT License

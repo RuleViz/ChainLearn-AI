@@ -3,6 +3,7 @@ import { X, Search, Star, Trash2, Tag, BookOpen, ChevronDown, ChevronRight, Chec
 import { Note } from '../types';
 import { getNotes, deleteNote, deleteNotes, toggleFavorite, updateNote, searchNotes, clearAllNotes } from '../services/notebookService';
 import { SimpleMarkdown } from './SimpleMarkdown';
+import { useTranslation } from '../contexts/LanguageContext';
 
 interface NotebookProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface NotebookProps {
 }
 
 export const Notebook: React.FC<NotebookProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const [notes, setNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -62,7 +64,7 @@ export const Notebook: React.FC<NotebookProps> = ({ isOpen, onClose }) => {
   };
 
   const handleClearAll = () => {
-    if (confirm('确定要清空所有笔记吗？此操作不可恢复。')) {
+    if (confirm(t('notebook_delete_confirm') || 'Delete all notes? This cannot be undone.')) {
       clearAllNotes();
       loadNotes();
       setSelectedNote(null);
@@ -127,8 +129,8 @@ export const Notebook: React.FC<NotebookProps> = ({ isOpen, onClose }) => {
             <div className="p-2 bg-neutral-100 rounded-lg">
               <BookOpen className="w-5 h-5 text-neutral-600" />
             </div>
-            <h2 className="text-lg font-semibold text-neutral-900">笔记本</h2>
-            <span className="text-sm text-neutral-500">{notes.length} 条笔记</span>
+            <h2 className="text-lg font-semibold text-neutral-900">{t('notebook')}</h2>
+            <span className="text-sm text-neutral-500">{notes.length}</span>
           </div>
           <div className="flex items-center gap-2">
             {notes.length > 0 && (
@@ -137,18 +139,18 @@ export const Notebook: React.FC<NotebookProps> = ({ isOpen, onClose }) => {
                   <>
                     {selectedIds.size > 0 && (
                       <button onClick={handleBatchDelete} className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg">
-                        删除选中 ({selectedIds.size})
+                        {t('notebook_delete_selected')} ({selectedIds.size})
                       </button>
                     )}
                     <button onClick={() => { setIsSelectionMode(false); setSelectedIds(new Set()); }}
-                      className="px-3 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 rounded-lg">取消</button>
+                      className="px-3 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 rounded-lg">{t('cancel')}</button>
                   </>
                 ) : (
                   <>
                     <button onClick={() => setIsSelectionMode(true)}
-                      className="px-3 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 rounded-lg">批量管理</button>
+                      className="px-3 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 rounded-lg">{t('edit')}</button>
                     <button onClick={handleClearAll}
-                      className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg">清空</button>
+                      className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg">{t('delete')}</button>
                   </>
                 )}
               </>
@@ -165,7 +167,7 @@ export const Notebook: React.FC<NotebookProps> = ({ isOpen, onClose }) => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               type="text"
-              placeholder="搜索笔记..."
+              placeholder={t('notebook_search_placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:border-neutral-400"
@@ -178,7 +180,7 @@ export const Notebook: React.FC<NotebookProps> = ({ isOpen, onClose }) => {
             }`}
           >
             <Star className={`w-4 h-4 ${filterFavorites ? 'fill-amber-500' : ''}`} />
-            收藏
+            {t('notebook_favorites')}
           </button>
         </div>
 
@@ -188,8 +190,8 @@ export const Notebook: React.FC<NotebookProps> = ({ isOpen, onClose }) => {
             {notes.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-neutral-400 p-8">
                 <BookOpen className="w-16 h-16 mb-4 opacity-50" />
-                <p>{searchQuery ? '没有找到匹配的笔记' : '还没有保存任何笔记'}</p>
-                <p className="text-sm mt-2">在对话中点击消息旁的保存按钮添加笔记</p>
+                <p>{t('notebook_empty')}</p>
+                <p className="text-sm mt-2">{t('notebook_empty_desc')}</p>
               </div>
             ) : (
               <div className="p-3 space-y-2">

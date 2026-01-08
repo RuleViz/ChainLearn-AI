@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Play, Trash2, Clock, MessageSquare, CheckCircle2, Circle, Check } from 'lucide-react';
 import { getSessions, formatDuration, loadWorkflowState, clearAllSessions, deleteSession, deleteSessions } from '../services/learningStats';
 import { LearningSession, WorkflowState } from '../types';
+import { useTranslation } from '../contexts/LanguageContext';
 
 interface LearningHistoryProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface LearningHistoryProps {
 }
 
 export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClose, onContinueLearning }) => {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<LearningSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<LearningSession | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -28,42 +30,34 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
     if (state) {
       onContinueLearning(state, session.id);
       onClose();
-    } else {
-      alert('无法加载学习状态，可能数据已损坏或未保存');
     }
   };
 
   const handleDelete = (sessionId: string) => {
-    if (confirm('确定要删除这条学习记录吗？')) {
-      deleteSession(sessionId);
-      setSessions(prev => prev.filter(s => s.id !== sessionId));
-      if (selectedSession?.id === sessionId) {
-        setSelectedSession(null);
-      }
+    deleteSession(sessionId);
+    setSessions(prev => prev.filter(s => s.id !== sessionId));
+    if (selectedSession?.id === sessionId) {
+      setSelectedSession(null);
     }
   };
 
   const handleBatchDelete = () => {
     if (selectedIds.size === 0) return;
-    if (confirm(`确定要删除选中的 ${selectedIds.size} 条学习记录吗？此操作不可恢复。`)) {
-      deleteSessions(Array.from(selectedIds));
-      setSessions(prev => prev.filter(s => !selectedIds.has(s.id)));
-      setSelectedIds(new Set());
-      setIsSelectionMode(false);
-      if (selectedSession && selectedIds.has(selectedSession.id)) {
-        setSelectedSession(null);
-      }
+    deleteSessions(Array.from(selectedIds));
+    setSessions(prev => prev.filter(s => !selectedIds.has(s.id)));
+    setSelectedIds(new Set());
+    setIsSelectionMode(false);
+    if (selectedSession && selectedIds.has(selectedSession.id)) {
+      setSelectedSession(null);
     }
   };
 
   const handleClearAll = () => {
-    if (confirm('确定要清除所有学习记录吗？此操作不可恢复。')) {
-      clearAllSessions();
-      setSessions([]);
-      setSelectedSession(null);
-      setSelectedIds(new Set());
-      setIsSelectionMode(false);
-    }
+    clearAllSessions();
+    setSessions([]);
+    setSelectedSession(null);
+    setSelectedIds(new Set());
+    setIsSelectionMode(false);
   };
 
   const toggleSelection = (sessionId: string) => {
@@ -97,10 +91,10 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
             <div className="p-2 bg-neutral-100 rounded-lg">
               <Clock className="w-5 h-5 text-neutral-600" />
             </div>
-            <h2 className="text-lg font-semibold text-neutral-900">学习管理</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">{t('history')}</h2>
             {isSelectionMode && selectedIds.size > 0 && (
               <span className="text-sm text-neutral-500">
-                已选择 {selectedIds.size} 项
+                {selectedIds.size}
               </span>
             )}
           </div>
@@ -113,14 +107,14 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                       onClick={toggleSelectAll}
                       className="px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
                     >
-                      {selectedIds.size === sessions.length ? '取消全选' : '全选'}
+                      {selectedIds.size === sessions.length ? t('notebook_deselect_all') : t('notebook_select_all')}
                     </button>
                     {selectedIds.size > 0 && (
                       <button
                         onClick={handleBatchDelete}
                         className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
-                        删除选中
+                        {t('notebook_delete_selected')}
                       </button>
                     )}
                     <button
@@ -130,7 +124,7 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                       }}
                       className="px-3 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 rounded-lg transition-colors"
                     >
-                      取消
+                      {t('cancel')}
                     </button>
                   </>
                 ) : (
@@ -139,7 +133,7 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                       onClick={() => setIsSelectionMode(true)}
                       className="px-3 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 rounded-lg transition-colors"
                     >
-                      批量管理
+                      {t('edit')}
                     </button>
                     <button
                       onClick={handleClearAll}
@@ -249,7 +243,7 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                       className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors text-sm"
                     >
                       <Play className="w-4 h-4" />
-                      <span>{session.completed ? '查看学习' : '继续学习'}</span>
+                      <span>{t('history_continue')}</span>
                     </button>
                   )}
                 </div>

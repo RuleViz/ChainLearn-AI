@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AIConfig, LearningGranularity, ProviderConfig, ModelConfig, Expert, ExpertConfig } from '../types';
-import { X, Save, Key, Globe, Box, Layers, Plus, Trash2, AlertCircle, ExternalLink, Users, RotateCcw, Edit3, Check } from 'lucide-react';
+import { X, Save, Key, Globe, Box, Layers, Plus, Trash2, AlertCircle, ExternalLink, Users, RotateCcw, Edit3, Check, Languages } from 'lucide-react';
 import { PRESET_PROVIDERS, createDefaultProviderConfig, createCustomProviderConfig } from '../services/providerPresets';
 import { getExpertConfig, saveExpertConfig, addExpert, updateExpert, deleteExpert, resetBuiltInExpert, resetAllExperts, BUILTIN_EXPERTS } from '../src/expert';
+import { useTranslation } from '../contexts/LanguageContext';
+import { Language } from '../services/i18n';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -11,15 +13,16 @@ interface SettingsModalProps {
   onSave: (config: AIConfig) => void;
 }
 
-const GRANULARITY_OPTIONS: { value: LearningGranularity; label: string; desc: string; nodes: string }[] = [
-  { value: 'brief', label: '简洁', desc: '快速概览，适合有基础的学习者', nodes: '2-3 节点' },
-  { value: 'standard', label: '标准', desc: '平衡深度与效率', nodes: '4-6 节点' },
-  { value: 'detailed', label: '详细', desc: '深入学习，适合初学者', nodes: '7-10 节点' },
+const GRANULARITY_OPTIONS: { value: LearningGranularity; label: string; labelEn: string; desc: string; descEn: string; nodes: string }[] = [
+  { value: 'brief', label: '简洁', labelEn: 'Brief', desc: '快速概览，适合有基础的学习者', descEn: 'Quick overview for learners with background', nodes: '2-3' },
+  { value: 'standard', label: '标准', labelEn: 'Standard', desc: '平衡深度与效率', descEn: 'Balanced depth and efficiency', nodes: '4-6' },
+  { value: 'detailed', label: '详细', labelEn: 'Detailed', desc: '深入学习，适合初学者', descEn: 'In-depth learning for beginners', nodes: '7-10' },
 ];
 
 type TabType = 'providers' | 'experts' | 'learning';
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, onSave }) => {
+  const { language, setLanguage, t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('providers');
   const [providers, setProviders] = useState<ProviderConfig[]>([]);
   const [activeProviderId, setActiveProviderId] = useState<string>('');
@@ -195,7 +198,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
       <div className="bg-white border border-neutral-200 rounded-2xl w-full max-w-3xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-neutral-200 bg-white shrink-0">
-          <h2 className="text-xl font-semibold text-neutral-900">设置</h2>
+          <h2 className="text-xl font-semibold text-neutral-900">{t('settings')}</h2>
           <button onClick={onClose} className="text-neutral-400 hover:text-neutral-900 transition-colors">
             <X className="w-6 h-6" />
           </button>
@@ -209,7 +212,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
               activeTab === 'providers' ? 'text-neutral-900 border-b-2 border-neutral-900 bg-white' : 'text-neutral-500 hover:text-neutral-900'
             }`}
           >
-            AI 服务商
+            {t('settings_provider')}
           </button>
           <button
             onClick={() => setActiveTab('experts')}
@@ -217,7 +220,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
               activeTab === 'experts' ? 'text-neutral-900 border-b-2 border-neutral-900 bg-white' : 'text-neutral-500 hover:text-neutral-900'
             }`}
           >
-            专家管理
+            {t('settings_experts')}
           </button>
           <button
             onClick={() => setActiveTab('learning')}
@@ -225,7 +228,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
               activeTab === 'learning' ? 'text-neutral-900 border-b-2 border-neutral-900 bg-white' : 'text-neutral-500 hover:text-neutral-900'
             }`}
           >
-            学习设置
+            {t('settings_preferences')}
           </button>
         </div>
 
@@ -531,10 +534,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
           {/* Learning Tab */}
           {activeTab === 'learning' && (
             <div className="space-y-6">
+              {/* Language Setting */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-neutral-700 flex items-center gap-2">
+                  <Languages className="w-4 h-4 text-neutral-500" />
+                  {t('settings_language')}
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setLanguage('zh')}
+                    className={`p-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${
+                      language === 'zh' ? 'bg-neutral-900 border-neutral-900 text-white' : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                    }`}
+                  >
+                    <span className="font-medium text-sm">{t('language_zh')}</span>
+                  </button>
+                  <button
+                    onClick={() => setLanguage('en')}
+                    className={`p-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${
+                      language === 'en' ? 'bg-neutral-900 border-neutral-900 text-white' : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                    }`}
+                  >
+                    <span className="font-medium text-sm">{t('language_en')}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Granularity Setting */}
               <div className="space-y-3">
                 <label className="text-sm font-medium text-neutral-700 flex items-center gap-2">
                   <Layers className="w-4 h-4 text-neutral-500" />
-                  学习链细度
+                  {t('settings_granularity')}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {GRANULARITY_OPTIONS.map((option) => (
@@ -542,12 +572,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
                       className={`p-3 rounded-xl border flex flex-col items-center gap-1 transition-all ${
                         granularity === option.value ? 'bg-neutral-900 border-neutral-900 text-white' : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300'
                       }`}>
-                      <div className="font-medium text-sm">{option.label}</div>
+                      <div className="font-medium text-sm">{language === 'zh' ? option.label : option.labelEn}</div>
                       <span className="text-xs opacity-70">{option.nodes}</span>
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-neutral-500">{GRANULARITY_OPTIONS.find(o => o.value === granularity)?.desc}</p>
+                <p className="text-xs text-neutral-500">{language === 'zh' ? GRANULARITY_OPTIONS.find(o => o.value === granularity)?.desc : GRANULARITY_OPTIONS.find(o => o.value === granularity)?.descEn}</p>
               </div>
             </div>
           )}
@@ -555,9 +585,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
 
         {/* Footer */}
         <div className="p-6 border-t border-neutral-200 bg-neutral-50 flex justify-end gap-3 shrink-0">
-          <button onClick={onClose} className="px-4 py-2 text-neutral-600 hover:text-neutral-900 transition-colors text-sm">取消</button>
+          <button onClick={onClose} className="px-4 py-2 text-neutral-600 hover:text-neutral-900 transition-colors text-sm">{t('cancel')}</button>
           <button onClick={handleSave} className="px-6 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
-            <Save className="w-4 h-4" /> 保存配置
+            <Save className="w-4 h-4" /> {t('save')}
           </button>
         </div>
       </div>
