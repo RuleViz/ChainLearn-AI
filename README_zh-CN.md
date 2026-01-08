@@ -10,6 +10,17 @@
 
 View your app in AI Studio: https://ai.studio/apps/drive/1Q3SKXH21XXO0Dp9thuukmGxSfMO1Qyia
 
+
+## 🌟 创新特性
+
+### 🧠 内置专家路由 (Built-in Expert Router)
+- **智能角色切换**：系统自动分析您的输入主题，并将其路由到最合适的 AI 专家角色（例如"编程专家"、"历史教授"、"科学导师"）。
+- **上下文感知响应**：专门的提示词工程确保解释针对特定领域量身定制，提供更深入、更准确的见解。
+
+### 🎨 自研图表渲染引擎 (Self-developed Diagram Rendering Engine)
+- **无缝集成**：定制开发的渲染引擎，可解释 AI 生成的数据，直接在聊天界面中渲染复杂的图表。
+- **动态可视化**：支持实时渲染流程图、时序图、类图和思维导图，无需依赖外部工具。
+
 ## ✨ 核心功能
 
 ### 🎯 节点式学习链

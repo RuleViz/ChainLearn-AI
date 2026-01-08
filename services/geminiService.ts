@@ -218,10 +218,14 @@ export const sendChatMessage = async (
   title: string,
   microSteps: string[],
   history: ChatMessage[],
-  config: AIConfig
+  config: AIConfig,
+  expert?: Expert
 ): Promise<string> => {
-  const systemInstruction = `
-    You are an expert tutor for the topic: "${title}".
+  const expertIdentity = expert 
+    ? `You are ${expert.name}. ${expert.systemPrompt}\n\n` 
+    : '';
+    
+  const systemInstruction = `${expertIdentity}You are an expert tutor for the topic: "${title}".
     
     The structured goals (Micro-steps) for this session are:
     ${microSteps.map(s => `- ${s}`).join('\n')}

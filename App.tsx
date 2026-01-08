@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrainCircuit, Play, Send, Sparkles, BookOpen, ChevronRight, CheckCircle2, Loader2, Settings, Calendar as CalendarIcon, ClipboardCheck, ArrowLeft, BookMarked, Bookmark } from 'lucide-react';
 import { generateLearningPlan, initializeNodeChat, sendChatMessage, summarizeNodeChat, generateNodeQuiz } from './services/geminiService';
-import { LearningNode, NodeStatus, WorkflowState, ChatMessage, AIConfig } from './types';
+import { LearningNode, NodeStatus, WorkflowState, ChatMessage, AIConfig, Expert } from './types';
 import { NodeList } from './components/NodeList';
 import { SimpleMarkdown } from './components/SimpleMarkdown';
 import { SettingsModal } from './components/SettingsModal';
@@ -65,6 +65,7 @@ const App: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [notebookVersion, setNotebookVersion] = useState(0); // 用于触发重新检查笔记状态
+  const [currentExpert, setCurrentExpert] = useState<Expert | undefined>(undefined); // 当前选中的专家
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const currentSessionIdRef = useRef<string | null>(null);
@@ -216,7 +217,7 @@ const App: React.FC = () => {
 
     try {
 
-      let selectedExpert = undefined;
+      let selectedExpert: Expert | undefined = undefined;
       try {
         const expertId = await expertRouter.routerToExpert(state.topic);
         selectedExpert = expertRouter.getExpertById(expertId);
@@ -226,7 +227,8 @@ const App: React.FC = () => {
         console.error(`Expert Router: Failed to route expert for topic "${state.topic}"`);
       }
 
-
+      // 保存当前专家，供后续对话使用
+      setCurrentExpert(selectedExpert);
 
       const { plan } = await generateLearningPlan(state.topic, aiConfig, selectedExpert);
       const newNodes: LearningNode[] = plan.map((item, idx) => ({
@@ -338,7 +340,8 @@ const App: React.FC = () => {
         currentNode.title,
         currentNode.microSteps || [],
         updatedMessages,
-        aiConfig
+        aiConfig,
+        currentExpert // 传入当前专家
       );
 
       const aiMsg: ChatMessage = {
@@ -440,6 +443,9 @@ const App: React.FC = () => {
       isGeneratingPlan: false,
       error: null
     });
+    
+    // 清除专家状态
+    setCurrentExpert(undefined);
   };
 
   const activeNode = state.activeNodeIndex >= 0 && state.activeNodeIndex < state.nodes.length

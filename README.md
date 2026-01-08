@@ -10,7 +10,18 @@ An AI-powered interactive learning platform that helps users efficiently master 
 
 View your app in AI Studio: https://ai.studio/apps/drive/1Q3SKXH21XXO0Dp9thuukmGxSfMO1Qyia
 
-## ✨ Key Features
+
+## 🌟 Innovative Features
+
+### 🧠 Built-in Expert Router
+- **Intelligent Persona Switching**: The system automatically analyzes your entered topic and routes it to the most suitable AI expert persona (e.g., "Coding Expert", "History Professor", "Science Tutor").
+- **Context-Aware Responses**: Specialized prompts ensure that explanations are tailored to the domain, providing deeper and more accurate insights.
+
+### 🎨 Self-developed Diagram Rendering Engine
+- **Seamless Integration**: A custom-built rendering engine that interprets AI-generated data to render complex diagrams directly within the chat interface.
+- **Dynamic Visualization**: Supports real-time rendering of Flowcharts, Sequence Diagrams, Class Diagrams, and Mindmaps without external dependencies.
+
+## ✨ Core Features
 
 ### 🎯 Node-Based Learning Chain
 - Automatically breaks down learning topics into multiple logical nodes

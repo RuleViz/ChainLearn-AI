@@ -60,11 +60,13 @@ const MathBlock: React.FC<{ formula: string; displayMode: boolean }> = ({ formul
   }
 };
 
+
 // 3. Component for Inline Text (Bold, Code, Math, etc.) - OpenAI 风格
 const InlineText: React.FC<{ text: string }> = ({ text }) => {
   if (!text) return null;
 
-  const parts = text.split(/(\*\*.*?\*\*|`.*?`|\$(?!\$).*?\$(?!\$))/g);
+  // Split by bold, inline code, and inline math
+  const parts = text.split(/(\*\*.*?\*\*|`.*?`|\$[^$]+\$)/g);
 
   return (
     <span>
@@ -94,6 +96,7 @@ const Table: React.FC<{ rows: string[][] }> = ({ rows }) => {
   if (rows.length < 2) return null;
 
   const headers = rows[0];
+  // Skip separator row (index 1), data starts from index 2
   const dataRows = rows.slice(2);
 
   return (
@@ -130,10 +133,16 @@ const Table: React.FC<{ rows: string[][] }> = ({ rows }) => {
   );
 };
 
+
 // 5. Helper function to render a single line - OpenAI 风格
 const renderLine = (line: string, lineIndex: number): React.ReactNode => {
   const trimmed = line.trim();
   if (!trimmed) return null;
+
+  // Skip table separator lines
+  if (/^[\s|:\-]+$/.test(trimmed) && trimmed.includes('|')) {
+    return null;
+  }
 
   if (line.startsWith('##### ')) {
     return <h5 key={lineIndex} className="text-sm font-semibold text-neutral-800 mt-4 mb-1"><InlineText text={line.replace('##### ', '')} /></h5>;
@@ -177,6 +186,11 @@ const renderLine = (line: string, lineIndex: number): React.ReactNode => {
     );
   }
 
+  // Horizontal rule
+  if (/^[-*_]{3,}$/.test(trimmed)) {
+    return <hr key={lineIndex} className="my-4 border-neutral-200" />;
+  }
+
   return (
     <p key={lineIndex} className="mb-2">
       <InlineText text={line} />
@@ -184,7 +198,52 @@ const renderLine = (line: string, lineIndex: number): React.ReactNode => {
   );
 };
 
-// 6. Main Parser Component
+
+// 6. Helper function to parse table from lines
+const parseTable = (lines: string[], startIdx: number): { rows: string[][]; endIdx: number } | null => {
+  const rows: string[][] = [];
+  let i = startIdx;
+
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    
+    // Check if line contains table cells
+    if (!line.includes('|')) break;
+    
+    // Parse cells from line
+    const cells = line
+      .split('|')
+      .map(cell => cell.trim())
+      .filter((cell, idx, arr) => {
+        // Filter out empty cells from leading/trailing |
+        if (idx === 0 && cell === '') return false;
+        if (idx === arr.length - 1 && cell === '') return false;
+        return true;
+      });
+
+    // Skip separator row but keep track of it
+    if (/^[\s|:\-]+$/.test(line)) {
+      rows.push(['__SEPARATOR__']);
+    } else if (cells.length > 0) {
+      rows.push(cells);
+    }
+    
+    i++;
+  }
+
+  // Valid table needs at least header + separator + 1 data row
+  if (rows.length >= 3 && rows[1][0] === '__SEPARATOR__') {
+    // Remove separator marker
+    rows.splice(1, 1);
+    // Add back a placeholder for Table component
+    rows.splice(1, 0, ['---']);
+    return { rows, endIdx: i };
+  }
+
+  return null;
+};
+
+// 7. Main Parser Component
 export const SimpleMarkdown: React.FC<SimpleMarkdownProps> = ({ content }) => {
   const mathAndCodeBlocks = content.split(/(\$\$[\s\S]*?\$\$|```[\s\S]*?```)/g);
 
@@ -209,69 +268,36 @@ export const SimpleMarkdown: React.FC<SimpleMarkdownProps> = ({ content }) => {
           return <CodeBlock key={blockIndex} language={language} code={code} />;
         }
 
+        // Process regular text with potential tables
         const lines = block.split('\n');
+        const elements: React.ReactNode[] = [];
+        let i = 0;
 
-        // Check for tables
-        let tableStartIdx = -1;
-        let tableEndIdx = -1;
-        for (let i = 0; i < lines.length - 1; i++) {
-          const currentLine = lines[i].trim();
-          const nextLine = lines[i + 1].trim();
-          if (
-            currentLine.includes('|') &&
-            nextLine.includes('|') &&
-            nextLine.replace(/[|\s-]/g, '').length === 0
-          ) {
-            tableStartIdx = i;
-            for (let j = i + 2; j < lines.length; j++) {
-              if (!lines[j].trim().includes('|')) {
-                tableEndIdx = j;
-                break;
+        while (i < lines.length) {
+          const line = lines[i].trim();
+          
+          // Check if this could be start of a table
+          if (line.includes('|') && i + 1 < lines.length) {
+            const nextLine = lines[i + 1].trim();
+            // Check if next line is separator (contains only |, -, :, spaces)
+            if (nextLine.includes('|') && /^[\s|:\-]+$/.test(nextLine)) {
+              const tableResult = parseTable(lines, i);
+              if (tableResult) {
+                elements.push(<Table key={`table-${i}`} rows={tableResult.rows} />);
+                i = tableResult.endIdx;
+                continue;
               }
-              tableEndIdx = j + 1;
             }
-            break;
           }
+          
+          // Regular line
+          if (line) {
+            elements.push(renderLine(lines[i], i));
+          }
+          i++;
         }
 
-        if (tableStartIdx !== -1 && tableEndIdx !== -1) {
-          const tableLines = lines.slice(tableStartIdx, tableEndIdx);
-          const tableRows = tableLines.map((line: string) =>
-            line
-              .split('|')
-              .map((cell: string) => cell.trim())
-              .filter((cell: string) => cell.length > 0)
-          );
-
-          const beforeTable = lines.slice(0, tableStartIdx);
-          const afterTable = lines.slice(tableEndIdx);
-
-          return (
-            <div key={blockIndex}>
-              {beforeTable.map((line: string, idx: number) => {
-                const trimmed = line.trim();
-                if (!trimmed) return null;
-                return renderLine(line, idx);
-              })}
-              <Table rows={tableRows} />
-              {afterTable.map((line: string, idx: number) => {
-                const trimmed = line.trim();
-                if (!trimmed) return null;
-                return renderLine(line, idx + tableEndIdx);
-              })}
-            </div>
-          );
-        }
-
-        return (
-          <div key={blockIndex}>
-            {lines.map((line: string, lineIndex: number) => {
-              const trimmed = line.trim();
-              if (!trimmed) return null;
-              return renderLine(line, lineIndex);
-            })}
-          </div>
-        );
+        return <div key={blockIndex}>{elements}</div>;
       })}
     </div>
   );
