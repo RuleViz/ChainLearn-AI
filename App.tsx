@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BrainCircuit, Play, Send, Sparkles, BookOpen, ChevronRight, CheckCircle2, Loader2, Settings } from 'lucide-react';
-import { generateLearningPlan, initializeNodeChat, sendChatMessage, summarizeNodeChat } from './services/geminiService';
+import { BrainCircuit, Play, Send, Sparkles, BookOpen, ChevronRight, CheckCircle2, Loader2, Settings, Calendar as CalendarIcon, ClipboardCheck, ArrowLeft } from 'lucide-react';
+import { generateLearningPlan, initializeNodeChat, sendChatMessage, summarizeNodeChat, generateNodeQuiz } from './services/geminiService';
 import { LearningNode, NodeStatus, WorkflowState, ChatMessage, AIConfig } from './types';
 import { NodeList } from './components/NodeList';
 import { SimpleMarkdown } from './components/SimpleMarkdown';
 import { SettingsModal } from './components/SettingsModal';
+import { Calendar } from './components/Calendar';
+import { LearningHistory } from './components/LearningHistory';
+import { QuizModal } from './components/QuizModal';
+import { startSession, endSession, updateSessionMessageCount, accumulateSessionTime, saveWorkflowState } from './services/learningStats';
+import { ExpertRouterService } from './services/expertService';
 
 const DEFAULT_CONFIG: AIConfig = {
   provider: 'GEMINI',
@@ -29,11 +34,90 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : DEFAULT_CONFIG;
   });
 
+
+  const [expertRouter] = useState(() => {
+      return new ExpertRouterService(aiConfig);
+  })
+
+
+
+
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
   const [inputMessage, setInputMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const currentSessionIdRef = useRef<string | null>(null);
+
+  // 页面加载时恢复状态
+  useEffect(() => {
+    const savedState = localStorage.getItem('chainlearn_current_state');
+    const savedSessionId = localStorage.getItem('chainlearn_current_session');
+    
+    if (savedState && savedSessionId) {
+      try {
+        const parsedState = JSON.parse(savedState);
+        setState(parsedState);
+        currentSessionIdRef.current = savedSessionId;
+        console.log('恢复学习状态:', savedSessionId);
+      } catch (err) {
+        console.error('恢复状态失败:', err);
+      }
+    }
+  }, []);
+
+  // 定期保存工作流状态到 localStorage
+  useEffect(() => {
+    if (currentSessionIdRef.current && state.nodes.length > 0) {
+      console.log('保存工作流状态，会话ID:', currentSessionIdRef.current);
+      saveWorkflowState(currentSessionIdRef.current, state);
+      
+      // 同时保存到 localStorage 用于页面刷新恢复
+      localStorage.setItem('chainlearn_current_state', JSON.stringify(state));
+      localStorage.setItem('chainlearn_current_session', currentSessionIdRef.current);
+    }
+  }, [state]);
+
+  // 学习时间计时器 - 只在学习界面时累计时间
+  useEffect(() => {
+    const activeNode = state.activeNodeIndex >= 0 && state.activeNodeIndex < state.nodes.length 
+      ? state.nodes[state.activeNodeIndex] 
+      : null;
+    
+    // 只有在学习界面（有活跃节点且状态为 ACTIVE）时才计时
+    const isInLearningView = activeNode && activeNode.status === NodeStatus.ACTIVE;
+    
+    if (!isInLearningView || !currentSessionIdRef.current) {
+      return;
+    }
+
+    // 每10秒累计一次学习时间
+    const timer = setInterval(() => {
+      if (currentSessionIdRef.current && document.visibilityState === 'visible') {
+        accumulateSessionTime(currentSessionIdRef.current);
+      }
+    }, 10000);
+
+    // 页面可见性变化时的处理
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && currentSessionIdRef.current) {
+        // 页面重新可见时，重置 lastActiveTime 避免累计离开时间
+        accumulateSessionTime(currentSessionIdRef.current);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [state.activeNodeIndex, state.nodes]);
 
   // Helper to update specific node data
   const updateNode = (index: number, updates: Partial<LearningNode>) => {
@@ -44,11 +128,25 @@ const App: React.FC = () => {
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // 使用 setTimeout 确保 DOM 已经渲染完成
+    setTimeout(() => {
+      if (messagesEndRef.current) {
+        const container = messagesEndRef.current.parentElement;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      }
+    }, 100);
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // 只在有消息时才滚动
+    const activeNode = state.activeNodeIndex >= 0 && state.activeNodeIndex < state.nodes.length 
+      ? state.nodes[state.activeNodeIndex] 
+      : null;
+    if (activeNode && activeNode.messages.length > 0) {
+      scrollToBottom();
+    }
   }, [state.nodes, state.activeNodeIndex]);
 
   // Auto-focus input when it becomes available or after sending
@@ -66,6 +164,14 @@ const App: React.FC = () => {
     localStorage.setItem('chainlearn_config', JSON.stringify(newConfig));
   };
 
+  // 继续学习
+  const handleContinueLearning = (loadedState: WorkflowState, sessionId: string) => {
+    console.log('继续学习，加载状态:', loadedState);
+    setState(loadedState);
+    currentSessionIdRef.current = sessionId;
+    setIsHistoryOpen(false);
+  };
+
   // Phase 1: Generate Plan
   const handleStartLearning = async () => {
     if (!state.topic.trim()) return;
@@ -73,7 +179,20 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, isGeneratingPlan: true, error: null, nodes: [], activeNodeIndex: -1, contextSummary: '' }));
 
     try {
-      const { plan } = await generateLearningPlan(state.topic, aiConfig);
+
+      let selectedExpert = undefined;
+      try{
+        const expertId = await expertRouter.routerToExpert(state.topic);
+        selectedExpert =expertRouter.getExpertById(expertId);
+        console.log(`Expert Router: Selected expert for topic "${state.topic}" with ID ${expertId}`);
+
+      }catch(err){
+        console.error(`Expert Router: Failed to route expert for topic "${state.topic}"`);
+      }
+
+
+
+      const { plan } = await generateLearningPlan(state.topic, aiConfig,selectedExpert);
       const newNodes: LearningNode[] = plan.map((item, idx) => ({
         id: `node-${idx}`,
         title: item.title,
@@ -81,6 +200,12 @@ const App: React.FC = () => {
         status: NodeStatus.PENDING,
         messages: []
       }));
+
+      // 立即创建学习会话
+      const nodeIds = newNodes.map(n => n.id);
+      const nodeTitles = newNodes.map(n => n.title);
+      currentSessionIdRef.current = startSession(nodeIds, state.topic, nodeTitles);
+      console.log('创建学习会话:', currentSessionIdRef.current);
 
       setState(prev => ({
         ...prev,
@@ -100,7 +225,17 @@ const App: React.FC = () => {
 
   // Phase 2: Initialize Node (Generate Context & First Message)
   useEffect(() => {
+    
     const initNode = async () => {
+      let selectedExpert = undefined;
+       try{
+        const expertId = await expertRouter.routerToExpert(state.topic);
+        selectedExpert =expertRouter.getExpertById(expertId);
+        console.log(`Expert Router: Selected expert for topic "${state.topic}" with ID ${expertId}`);
+
+      }catch(err){
+        console.error(`Expert Router: Failed to route expert for topic "${state.topic}"`);
+      }
       const { activeNodeIndex, nodes, contextSummary } = state;
       if (activeNodeIndex === -1 || activeNodeIndex >= nodes.length) return;
       
@@ -114,7 +249,8 @@ const App: React.FC = () => {
           currentNode.title, 
           currentNode.description, 
           contextSummary,
-          aiConfig
+          aiConfig,
+          selectedExpert
         );
 
         const firstMsg: ChatMessage = {
@@ -176,10 +312,36 @@ const App: React.FC = () => {
       };
 
       updateNode(currentIdx, { messages: [...updatedMessages, aiMsg] });
+      
+      // 更新会话消息数
+      if (currentSessionIdRef.current) {
+        updateSessionMessageCount(currentSessionIdRef.current, updatedMessages.length + 1);
+      }
     } catch (error) {
       console.error(error);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  // Generate Quiz for current node
+  const handleGenerateQuiz = async () => {
+    const { activeNodeIndex, nodes } = state;
+    const currentNode = nodes[activeNodeIndex];
+
+    if (currentNode.messages.length === 0) return;
+
+    setIsGeneratingQuiz(true);
+
+    try {
+      const questions = await generateNodeQuiz(currentNode.title, currentNode.messages, aiConfig);
+      updateNode(activeNodeIndex, { quiz: questions });
+      setIsQuizOpen(true);
+    } catch (error) {
+      console.error('Failed to generate quiz:', error);
+      setState(prev => ({...prev, error: "Failed to generate quiz."}));
+    } finally {
+      setIsGeneratingQuiz(false);
     }
   };
 
@@ -200,6 +362,14 @@ const App: React.FC = () => {
         summary 
       });
 
+      // 检查是否是最后一个节点，如果是则结束会话
+      const isLastNode = activeNodeIndex === nodes.length - 1;
+      if (isLastNode && currentSessionIdRef.current) {
+        const totalMessages = nodes.reduce((sum, n) => sum + n.messages.length, 0);
+        endSession(currentSessionIdRef.current, summary, totalMessages);
+        currentSessionIdRef.current = null;
+      }
+
       setState(prev => ({
         ...prev,
         contextSummary: prev.contextSummary + `\n\n[Finished ${currentNode.title}]: ${summary}`,
@@ -210,6 +380,30 @@ const App: React.FC = () => {
       console.error(error);
       setState(prev => ({...prev, error: "Failed to summarize node."}));
     }
+  };
+
+  // 返回首页
+  const handleBackToHome = () => {
+    // 清除当前状态
+    localStorage.removeItem('chainlearn_current_state');
+    localStorage.removeItem('chainlearn_current_session');
+    
+    // 如果有活跃会话，结束它
+    if (currentSessionIdRef.current) {
+      const totalMessages = state.nodes.reduce((sum, n) => sum + n.messages.length, 0);
+      endSession(currentSessionIdRef.current, '用户返回首页', totalMessages);
+      currentSessionIdRef.current = null;
+    }
+    
+    // 重置状态
+    setState({
+      topic: '',
+      nodes: [],
+      activeNodeIndex: -1,
+      contextSummary: '',
+      isGeneratingPlan: false,
+      error: null
+    });
   };
 
   const activeNode = state.activeNodeIndex >= 0 && state.activeNodeIndex < state.nodes.length 
@@ -226,6 +420,23 @@ const App: React.FC = () => {
         config={aiConfig}
         onSave={handleSaveConfig}
       />
+      <Calendar 
+        isOpen={isCalendarOpen} 
+        onClose={() => setIsCalendarOpen(false)} 
+      />
+      <LearningHistory
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        onContinueLearning={handleContinueLearning}
+      />
+      {activeNode && activeNode.quiz && (
+        <QuizModal
+          isOpen={isQuizOpen}
+          onClose={() => setIsQuizOpen(false)}
+          questions={activeNode.quiz}
+          nodeTitle={activeNode.title}
+        />
+      )}
 
       {/* --- Sidebar (Roadmap) --- */}
       {state.nodes.length > 0 && (
@@ -238,6 +449,15 @@ const App: React.FC = () => {
         {/* Header */}
         <header className="h-16 border-b border-slate-800 flex items-center justify-between px-6 bg-slate-950/80 backdrop-blur-md z-10 shrink-0">
           <div className="flex items-center gap-3">
+            {state.nodes.length > 0 && (
+              <button
+                onClick={handleBackToHome}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                title="返回首页"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
             <div className="p-2 bg-gradient-to-tr from-sky-500 to-indigo-600 rounded-lg">
               <BrainCircuit className="w-5 h-5 text-white" />
             </div>
@@ -250,6 +470,20 @@ const App: React.FC = () => {
                 Topic: <span className="text-white font-medium">{state.topic}</span>
               </div>
             )}
+            <button 
+              onClick={() => setIsHistoryOpen(true)}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+              title="学习管理"
+            >
+              <BookOpen className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => setIsCalendarOpen(true)}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+              title="学习日历"
+            >
+              <CalendarIcon className="w-5 h-5" />
+            </button>
             <button 
               onClick={() => setIsSettingsOpen(true)}
               className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
@@ -329,7 +563,7 @@ const App: React.FC = () => {
           {activeNode && (
             <div className="flex flex-1 overflow-hidden">
                {/* Main Chat Area */}
-               <div className="flex-1 flex flex-col h-full">
+               <div className="flex-1 flex flex-col h-full min-h-0">
                   
                   {/* Chat Header */}
                   <div className="p-4 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
@@ -340,32 +574,63 @@ const App: React.FC = () => {
                       <div className="text-sm text-slate-400">{activeNode.description}</div>
                     </div>
                     
-                    {/* Action Button */}
-                    {activeNode.status === NodeStatus.ACTIVE && (
-                       <button 
-                         onClick={handleCompleteNode}
-                         className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm border border-slate-700 transition-colors"
-                       >
-                         <span>Complete Node</span>
-                         <ChevronRight className="w-4 h-4" />
-                       </button>
-                    )}
-                    {activeNode.status === NodeStatus.SUMMARIZING && (
-                       <div className="flex items-center gap-2 px-4 py-2 bg-indigo-900/20 text-indigo-300 rounded-lg text-sm border border-indigo-900/50">
-                         <Loader2 className="w-4 h-4 animate-spin" />
-                         <span>Summarizing...</span>
-                       </div>
-                    )}
-                    {activeNode.status === NodeStatus.COMPLETED && (
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2">
+                      {activeNode.status === NodeStatus.ACTIVE && (
+                        <>
+                          {activeNode.quiz ? (
+                            <button 
+                              onClick={() => setIsQuizOpen(true)}
+                              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm transition-colors"
+                            >
+                              <ClipboardCheck className="w-4 h-4" />
+                              <span>知识自测</span>
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={handleGenerateQuiz}
+                              disabled={isGeneratingQuiz || activeNode.messages.length < 2}
+                              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-lg text-sm transition-colors"
+                            >
+                              {isGeneratingQuiz ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  <span>生成中...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ClipboardCheck className="w-4 h-4" />
+                                  <span>知识自测</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                          <button 
+                            onClick={handleCompleteNode}
+                            className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm border border-slate-700 transition-colors"
+                          >
+                            <span>Complete Node</span>
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                      {activeNode.status === NodeStatus.SUMMARIZING && (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-indigo-900/20 text-indigo-300 rounded-lg text-sm border border-indigo-900/50">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Summarizing...</span>
+                        </div>
+                      )}
+                      {activeNode.status === NodeStatus.COMPLETED && (
                         <div className="flex items-center gap-2 px-4 py-2 bg-emerald-900/20 text-emerald-300 rounded-lg text-sm border border-emerald-900/50">
                           <CheckCircle2 className="w-4 h-4" />
                           <span>Done</span>
                         </div>
-                    )}
+                      )}
+                    </div>
                   </div>
 
                   {/* Messages List */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth bg-slate-950">
+                  <div className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth bg-slate-950 min-h-0">
                     
                     {activeNode.status === NodeStatus.INITIALIZING && (
                        <div className="flex justify-center p-8">
@@ -407,19 +672,21 @@ const App: React.FC = () => {
 
                   {/* Input Area */}
                   {activeNode.status === NodeStatus.ACTIVE && (
-                    <div className="p-4 bg-slate-900/80 border-t border-slate-800 backdrop-blur-sm">
+                    <div className="p-4 bg-slate-900/80 border-t border-slate-800 backdrop-blur-sm shrink-0">
                       <div className="max-w-4xl mx-auto relative flex gap-2">
-                        <input
+                        <textarea
                           ref={inputRef}
-                          className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors placeholder:text-slate-600"
-                          placeholder="Ask a question or answer the tutor..."
+                          className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors placeholder:text-slate-600 resize-none"
+                          placeholder="Ask a question or answer the tutor... (Shift+Enter 换行, Enter 发送)"
                           value={inputMessage}
                           onChange={(e) => setInputMessage(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !isSending) {
+                            if (e.key === 'Enter' && !e.shiftKey && !isSending) {
+                              e.preventDefault();
                               handleSendMessage();
                             }
                           }}
+                          rows={3}
                           autoFocus
                         />
                         <button 

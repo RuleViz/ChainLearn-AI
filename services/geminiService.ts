@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { PlanResponse, ChatMessage, AIConfig } from "../types";
+import { PlanResponse, ChatMessage, AIConfig, Expert } from "../types";
 
 // --- Google Gemini Implementation (Default) ---
 const geminiClient = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -7,7 +7,7 @@ const GEMINI_MODEL_FAST = "gemini-2.5-flash";
 const GEMINI_MODEL_REASONING = "gemini-2.5-flash";
 
 // --- OpenAI / Custom Implementation ---
-const callOpenAICompatible = async (
+export const callOpenAICompatible = async (
   config: AIConfig,
   messages: Array<{ role: string; content: string }>,
   responseFormat?: 'json_object' | 'text'
@@ -89,14 +89,19 @@ const cleanAndParseJson = <T>(text: string): T => {
 
 // --- Exported Services ---
 
-export const generateLearningPlan = async (topic: string, config: AIConfig): Promise<PlanResponse> => {
-  const systemPrompt = `
-    You are an expert curriculum designer. 
-    Create a structured, step-by-step learning path for the topic: "${topic}".
-    Break this down into 4-6 logical chapters (nodes).
-    Each chapter should represent a distinct phase of learning.
-    Return ONLY valid JSON with a "plan" array containing objects with "title" and "description".
-  `;
+export const generateLearningPlan = async (topic: string, config: AIConfig,expert?:Expert): Promise<PlanResponse> => {
+  const systemPrompt = expert
+    ? `You are ${expert.name}. ${expert.systemPrompt}
+
+       Create a structured, step-by-step learning path for the topic: "${topic}".
+       Break this down into 4-6 logical chapters (nodes).
+       Each chapter should represent a distinct phase of learning.
+       Return ONLY valid JSON with a "plan" array containing objects with "title" and "description".`
+    : `You are an expert curriculum designer.
+       Create a structured, step-by-step learning path for the topic: "${topic}".
+       Break this down into 4-6 logical chapters (nodes).
+       Each chapter should represent a distinct phase of learning.
+       Return ONLY valid JSON with a "plan" array containing objects with "title" and "description".`;
 
   // GEMINI PATH
   if (config.provider === 'GEMINI') {
@@ -145,24 +150,40 @@ export const initializeNodeChat = async (
   title: string,
   description: string,
   previousContext: string,
-  config: AIConfig
+  config: AIConfig,
+  expert?: Expert
 ): Promise<{ initialMessage: string; microSteps: string[] }> => {
-  const prompt = `
-    You are a friendly, expert tutor teaching "${title}".
-    Goal: ${description}
-    
-    Context from previous learning steps:
-    ${previousContext ? previousContext : "This is the very first step. Assume no prior specific knowledge."}
+  const prompt = expert
+    ? `You are ${expert.name}. ${expert.systemPrompt}
 
-    Your Task:
-    1. Create 3-5 specific "Micro-steps" (key concepts) we will cover in this chat session.
-    2. Write an "initialMessage" to start the conversation. 
-       - Welcome the user.
-       - Briefly mention what we will cover.
-       - Ask a simple opening question.
-    
-    Return ONLY valid JSON with fields: "initialMessage" (string) and "microSteps" (string array).
-  `;
+       You are now teaching "${title}".
+       Goal: ${description}
+
+       Context from previous learning steps:
+       ${previousContext ? previousContext : "This is the very first step. Assume no prior specific knowledge."}
+
+       Your Task:
+       1. Create 3-5 specific "Micro-steps" (key concepts) we will cover in this chat session.
+       2. Write an "initialMessage" to start the conversation.
+          - Welcome the user.
+          - Briefly mention what we will cover.
+          - Ask a simple opening question.
+
+       Return ONLY valid JSON with fields: "initialMessage" (string) and "microSteps" (string array).`
+    : `You are a friendly, expert tutor teaching "${title}".
+       Goal: ${description}
+
+       Context from previous learning steps:
+       ${previousContext ? previousContext : "This is the very first step. Assume no prior specific knowledge."}
+
+       Your Task:
+       1. Create 3-5 specific "Micro-steps" (key concepts) we will cover in this chat session.
+       2. Write an "initialMessage" to start the conversation.
+          - Welcome the user.
+          - Briefly mention what we will cover.
+          - Ask a simple opening question.
+
+       Return ONLY valid JSON with fields: "initialMessage" (string) and "microSteps" (string array).`;
 
   // GEMINI PATH
   if (config.provider === 'GEMINI') {
@@ -219,6 +240,80 @@ export const sendChatMessage = async (
     - Check for understanding before moving to the next micro-step.
     - Be encouraging and concise.
     - Use Markdown for formatting (bold, code blocks, lists).
+    
+    IMPORTANT - Math Formulas:
+    When explaining mathematical concepts, equations, or formulas, you MUST use LaTeX notation:
+    - Use $...$ for inline math (e.g., $E = mc^2$, $\\frac{a}{b}$, $\\sqrt{x}$)
+    - Use $$...$$ for block/display math (centered, larger formulas)
+    
+    Examples:
+    - Inline: The quadratic formula is $x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$
+    - Block:
+    $$
+    \\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}
+    $$
+    
+    Common LaTeX commands:
+    - Fractions: \\frac{numerator}{denominator}
+    - Square root: \\sqrt{x}, \\sqrt[n]{x}
+    - Powers: x^2, x^{10}
+    - Subscripts: x_1, x_{10}
+    - Greek letters: \\alpha, \\beta, \\gamma, \\pi, \\theta
+    - Summation: \\sum_{i=1}^{n}
+    - Integral: \\int_a^b
+    - Limits: \\lim_{x \\to 0}
+    - Matrices: \\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}
+    
+    IMPORTANT - Visual Learning:
+    When explaining complex structures, relationships, or processes, you SHOULD use diagrams.
+    
+    Use \`\`\`mermaid code blocks with these SIMPLE formats:
+    
+    1. FLOWCHART (for processes, steps, decisions):
+    \`\`\`mermaid
+    graph TD
+    A[Start] --> B[Step 1]
+    B --> C[Step 2]
+    C --> D[End]
+    \`\`\`
+    
+    2. SEQUENCE (for interactions between entities):
+    \`\`\`mermaid
+    sequenceDiagram
+    Client->>Server: Request
+    Server->>Database: Query
+    Database-->>Server: Data
+    Server-->>Client: Response
+    \`\`\`
+    
+    3. TREE/MINDMAP (for hierarchies):
+    \`\`\`mermaid
+    mindmap
+    Root Topic
+      Branch 1
+        Leaf 1
+        Leaf 2
+      Branch 2
+        Leaf 3
+    \`\`\`
+    
+    CRITICAL RULES:
+    - Use ONLY English text in labels
+    - Keep labels SHORT (2-4 words max)
+    - NO special characters: () [] {} quotes
+    - Max 8-10 nodes per diagram
+    - Use simple node IDs: A, B, C or Step1, Step2
+    - Prefer flowchart (graph TD) when unsure
+    
+    GOOD examples:
+    - A[Start Process]
+    - B[Check Status]
+    - C[Send Data]
+    
+    BAD examples (will fail):
+    - A[print()函数]
+    - B[User's Input]
+    - C[Data [Array]]
   `;
 
   // GEMINI PATH
@@ -281,4 +376,91 @@ export const summarizeNodeChat = async (
     config,
     [{ role: "user", content: prompt }]
   );
+};
+
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
+export const generateNodeQuiz = async (
+  title: string,
+  chatHistory: ChatMessage[],
+  config: AIConfig
+): Promise<QuizQuestion[]> => {
+  const transcript = chatHistory
+    .map(m => `${m.role.toUpperCase()}: ${m.text}`)
+    .join('\n');
+
+  const prompt = `
+    Based on the following tutoring session about "${title}", generate 3-5 multiple choice quiz questions to test the user's understanding.
+
+    --- START TRANSCRIPT ---
+    ${transcript}
+    --- END TRANSCRIPT ---
+
+    Requirements:
+    1. Each question should have 4 options
+    2. Include the correct answer index (0-3)
+    3. Provide a clear explanation for why the answer is correct
+    4. Questions should cover key concepts from the session
+    5. Make questions practical and test real understanding, not just memorization
+
+    Return ONLY valid JSON with a "questions" array containing objects with:
+    - "question" (string): The question text
+    - "options" (string array): 4 possible answers
+    - "correctAnswer" (number): Index of correct answer (0-3)
+    - "explanation" (string): Why this answer is correct
+  `;
+
+  // GEMINI PATH
+  if (config.provider === 'GEMINI') {
+    const schema: Schema = {
+      type: Type.OBJECT,
+      properties: {
+        questions: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              question: { type: Type.STRING },
+              options: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING }
+              },
+              correctAnswer: { type: Type.NUMBER },
+              explanation: { type: Type.STRING }
+            },
+            required: ["question", "options", "correctAnswer", "explanation"]
+          }
+        }
+      },
+      required: ["questions"]
+    };
+
+    const response = await geminiClient.models.generateContent({
+      model: GEMINI_MODEL_FAST,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: schema,
+      },
+    });
+    const result = JSON.parse(response.text || "{}");
+    return result.questions || [];
+  }
+
+  // CUSTOM PATH
+  const responseText = await callOpenAICompatible(
+    config,
+    [
+      { role: "system", content: "You are a helpful assistant that creates quiz questions and outputs JSON." },
+      { role: "user", content: prompt }
+    ],
+    'json_object'
+  );
+  const result = cleanAndParseJson<{ questions: QuizQuestion[] }>(responseText);
+  return result.questions || [];
 };

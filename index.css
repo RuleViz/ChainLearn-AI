@@ -1,0 +1,55 @@
+/* KaTeX style overrides to prevent layout issues */
+.katex-display {
+  margin: 1rem 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.katex {
+  font-size: 1.1em;
+  color: #e2e8f0;
+}
+
+/* Ensure KaTeX doesn't affect parent container height unexpectedly */
+.katex-html {
+  white-space: nowrap;
+}
+
+/* Fix: Prevent KaTeX from breaking flex layouts */
+.katex-display > .katex {
+  display: inline-block;
+  text-align: center;
+}
+
+/* CRITICAL: Force correct flex layout for chat interface */
+.flex-1.flex.flex-col.h-full {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.flex-1.overflow-y-auto {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  order: 0 !important;
+}
+
+/* Ensure input area stays at bottom */
+.p-4.bg-slate-900\/80.border-t {
+  flex-shrink: 0 !important;
+  order: 1 !important;
+}
+
+/* Custom scrollbar for code blocks */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}

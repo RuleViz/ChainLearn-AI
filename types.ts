@@ -12,6 +12,13 @@ export interface ChatMessage {
   timestamp: number;
 }
 
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
 export interface LearningNode {
   id: string;
   title: string;
@@ -20,6 +27,7 @@ export interface LearningNode {
   messages: ChatMessage[]; // The conversation history
   summary?: string; // The AI generated summary of this node
   microSteps?: string[]; // The curriculum checklist for this node
+  quiz?: QuizQuestion[]; // Quiz questions for this node
 }
 
 export interface WorkflowState {
@@ -29,6 +37,9 @@ export interface WorkflowState {
   contextSummary: string; // The accumulated knowledge passed between nodes
   isGeneratingPlan: boolean;
   error: string | null;
+  selectedExpert?: Expert;
+  isExpertLoading?: boolean;
+
 }
 
 export type PlanResponse = {
@@ -50,6 +61,7 @@ export interface AIConfig {
 export interface LearningSession {
   id: string;
   nodeId: string[];   //节点id
+  nodeTitles?: string[];
   sessionTitle: string;    //学习主题
   startTime: string;
   endTime: string;
@@ -57,15 +69,35 @@ export interface LearningSession {
   messageCount: number;
   completed: boolean;   //遍历nodeId: string[]所有的状态
   summary: string;
+  tags: string[];
+  lastActiveTime?: string; // 最后活跃时间，用于累计学习时长
+  workflowState?: string; // 保存的工作流状态，用于继续学习
 }
 
+export interface LearningStatsSummary {
+  totalSessions: number;
+  totalDuration: number; // 毫秒
+  averageDailyDuration: number;
+  longestStreak: number; // 连续学习天数
+  currentStreak: number;
+  mostActiveDay?: string;
+}
 
-export interface DailyLearningStates{
-  date:string;
-  totalDuration:number;
-  sessionId:string[];   //通过startTime查当天的session
-  sessionCount:number;
-  extent:number;
+ export interface CalendarFilters {
+  nodeIds?: string[];
+  tags?: string[];
+  dateRange?: { start: string; end: string };
+  minDuration?: number;
+ }
+
+
+export interface DailyLearningStats {
+  date: string;
+  totalDuration: number;
+  sessionId: string[];   //通过startTime查当天的session
+  sessionCount: number;
+  intensity: number;  // 0-100
+  completedSessions: number;
 }
 
 export enum CalendarViewType {
@@ -91,11 +123,11 @@ export interface HeatmapDataPoint{
 export interface HeatmapData{
   year: number;
   month?: number;
-  data: HeatmapDataPoint
+  data: HeatmapDataPoint[]
 }
 
 export interface LearningCalendarState {
-  dailyStats: DailyLearningStates[];
+  dailyStats: DailyLearningStats[];
   heatmapData: HeatmapData[];
 
   viewConfig: CalendarViewConfig;
@@ -103,6 +135,17 @@ export interface LearningCalendarState {
   error: string | null;
 
   selectedDate?: string;
-  
+  dateRange?: {
+    start: string;
+    end: string;
+  }
 }
 
+
+//内置专家
+export interface Expert {
+  id: string;          // 唯一标识符 (如 "dr-quantum")
+  name: string;        // 专家名称 (如 "Dr. Sarah Chen")
+  description: string; // 简短介绍 (用于AI上下文)
+  systemPrompt: string; // AI系统提示词
+}
