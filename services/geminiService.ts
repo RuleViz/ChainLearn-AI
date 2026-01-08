@@ -1,46 +1,65 @@
-import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { PlanResponse, ChatMessage, AIConfig, Expert } from "../types";
+import { PlanResponse, ChatMessage, AIConfig, Expert, ProviderConfig } from "../types";
 
-// --- Google Gemini Implementation (Default) ---
-const geminiClient = new GoogleGenAI({ apiKey: process.env.API_KEY });
-const GEMINI_MODEL_FAST = "gemini-2.5-flash";
-const GEMINI_MODEL_REASONING = "gemini-2.5-flash";
+// 获取当前激活的服务商和模型
+const getActiveProviderAndModel = (config: AIConfig): { provider: ProviderConfig | null; modelId: string; baseUrl: string; apiKey: string } => {
+  if (config.providers && config.activeProviderId) {
+    const provider = config.providers.find(p => p.id === config.activeProviderId);
+    if (provider) {
+      return {
+        provider,
+        modelId: config.activeModelId || provider.models[0]?.id || '',
+        baseUrl: provider.baseUrl,
+        apiKey: provider.apiKey,
+      };
+    }
+  }
+  // 兼容旧版配置
+  return {
+    provider: null,
+    modelId: config.modelId || '',
+    baseUrl: config.baseUrl || '',
+    apiKey: config.apiKey || '',
+  };
+};
 
-// --- OpenAI / Custom Implementation ---
+// --- OpenAI 兼容 API 调用 ---
 export const callOpenAICompatible = async (
   config: AIConfig,
   messages: Array<{ role: string; content: string }>,
   responseFormat?: 'json_object' | 'text'
 ): Promise<string> => {
-  if (!config.apiKey) {
-    throw new Error("API Key is required for custom provider.");
+  const { modelId, baseUrl, apiKey } = getActiveProviderAndModel(config);
+  
+  if (!apiKey) {
+    throw new Error("请先配置 API Key");
   }
-  if (!config.baseUrl) {
-    throw new Error("Base URL is required for custom provider.");
+  if (!baseUrl) {
+    throw new Error("请先配置 Base URL");
+  }
+  if (!modelId) {
+    throw new Error("请先选择模型");
   }
 
-  const url = `${config.baseUrl.replace(/\/$/, '')}/chat/completions`;
+  const url = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
   
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${config.apiKey}`
+    "Authorization": `Bearer ${apiKey}`,
   };
 
-  // Fix: Ensure roles are OpenAI compatible (map 'model' -> 'assistant')
+  // 确保 roles 是 OpenAI 兼容的 (map 'model' -> 'assistant')
   const sanitizedMessages = messages.map(m => ({
     role: m.role === 'model' ? 'assistant' : m.role,
     content: m.content
   }));
 
   const body: any = {
-    model: config.modelId || 'gpt-3.5-turbo',
+    model: modelId,
     messages: sanitizedMessages,
     temperature: 0.7,
   };
 
   if (responseFormat === 'json_object') {
-    // Note: Not all providers support response_format. We rely on prompt engineering as primary method,
-    // but pass this for providers that do support it (like OpenAI native).
     body.response_format = { type: "json_object" };
   }
 
@@ -53,88 +72,86 @@ export const callOpenAICompatible = async (
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Provider Error (${response.status}): ${errorText}`);
+      throw new Error(`API 错误 (${response.status}): ${errorText}`);
     }
 
     const data = await response.json();
     return data.choices?.[0]?.message?.content || "";
   } catch (error) {
-    console.error("Custom Provider Call Error:", error);
+    console.error("API 调用错误:", error);
     throw error;
   }
 };
 
 /**
- * Helper to parse JSON from AI response, handling markdown code blocks often returned by open models.
+ * 从 AI 响应中解析 JSON，处理 markdown 代码块
  */
 const cleanAndParseJson = <T>(text: string): T => {
   try {
-    // 1. Try direct parse
     return JSON.parse(text);
   } catch (e) {
-    // 2. Try stripping markdown code blocks ```json ... ```
+    // 尝试提取 markdown 代码块中的 JSON
     const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     if (jsonMatch && jsonMatch[1]) {
       return JSON.parse(jsonMatch[1]);
     }
-    // 3. Try finding the first { and last }
+    // 尝试找到第一个 { 和最后一个 }
     const firstBrace = text.indexOf('{');
     const lastBrace = text.lastIndexOf('}');
     if (firstBrace !== -1 && lastBrace !== -1) {
       return JSON.parse(text.substring(firstBrace, lastBrace + 1));
     }
-    throw new Error("Failed to parse JSON from response: " + text.substring(0, 100) + "...");
+    throw new Error("无法解析 JSON 响应: " + text.substring(0, 100) + "...");
   }
 };
 
-// --- Exported Services ---
+// --- 导出的服务函数 ---
 
-export const generateLearningPlan = async (topic: string, config: AIConfig,expert?:Expert): Promise<PlanResponse> => {
+// 根据细度获取节点数量范围
+const getNodeCountByGranularity = (granularity: string): string => {
+  switch (granularity) {
+    case 'brief':
+      return '2-3';
+    case 'detailed':
+      return '7-10';
+    case 'standard':
+    default:
+      return '4-6';
+  }
+};
+
+// 根据细度获取描述
+const getGranularityDescription = (granularity: string): string => {
+  switch (granularity) {
+    case 'brief':
+      return 'Keep it concise and focus on the most essential concepts only.';
+    case 'detailed':
+      return 'Be thorough and comprehensive, covering all important subtopics and details.';
+    case 'standard':
+    default:
+      return 'Balance depth and efficiency, covering key concepts without being too brief or too detailed.';
+  }
+};
+
+export const generateLearningPlan = async (topic: string, config: AIConfig, expert?: Expert): Promise<PlanResponse> => {
+  const nodeCount = getNodeCountByGranularity(config.granularity || 'standard');
+  const granularityDesc = getGranularityDescription(config.granularity || 'standard');
+  
   const systemPrompt = expert
     ? `You are ${expert.name}. ${expert.systemPrompt}
 
        Create a structured, step-by-step learning path for the topic: "${topic}".
-       Break this down into 4-6 logical chapters (nodes).
+       Break this down into ${nodeCount} logical chapters (nodes).
+       ${granularityDesc}
        Each chapter should represent a distinct phase of learning.
        Return ONLY valid JSON with a "plan" array containing objects with "title" and "description".`
     : `You are an expert curriculum designer.
        Create a structured, step-by-step learning path for the topic: "${topic}".
-       Break this down into 4-6 logical chapters (nodes).
+       Break this down into ${nodeCount} logical chapters (nodes).
+       ${granularityDesc}
        Each chapter should represent a distinct phase of learning.
        Return ONLY valid JSON with a "plan" array containing objects with "title" and "description".`;
 
-  // GEMINI PATH
-  if (config.provider === 'GEMINI') {
-    const schema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        plan: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING },
-              description: { type: Type.STRING },
-            },
-            required: ["title", "description"],
-          },
-        },
-      },
-      required: ["plan"],
-    };
-
-    const response = await geminiClient.models.generateContent({
-      model: GEMINI_MODEL_FAST,
-      contents: systemPrompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: schema,
-      },
-    });
-    return JSON.parse(response.text || "{}") as PlanResponse;
-  }
-
-  // CUSTOM PATH
   const responseText = await callOpenAICompatible(
     config,
     [
@@ -185,42 +202,17 @@ export const initializeNodeChat = async (
 
        Return ONLY valid JSON with fields: "initialMessage" (string) and "microSteps" (string array).`;
 
-  // GEMINI PATH
-  if (config.provider === 'GEMINI') {
-    const schema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        initialMessage: { type: Type.STRING },
-        microSteps: { 
-          type: Type.ARRAY, 
-          items: { type: Type.STRING }
-        },
-      },
-      required: ["initialMessage", "microSteps"],
-    };
-
-    const response = await geminiClient.models.generateContent({
-      model: GEMINI_MODEL_FAST,
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: schema,
-      },
-    });
-    return JSON.parse(response.text || "{}");
-  }
-
-  // CUSTOM PATH
   const responseText = await callOpenAICompatible(
     config,
     [
-        { role: "system", content: "You are a helpful tutor that outputs JSON." },
-        { role: "user", content: prompt }
+      { role: "system", content: "You are a helpful tutor that outputs JSON." },
+      { role: "user", content: prompt }
     ],
     'json_object'
   );
   return cleanAndParseJson(responseText);
 };
+
 
 export const sendChatMessage = async (
   title: string,
@@ -316,24 +308,6 @@ export const sendChatMessage = async (
     - C[Data [Array]]
   `;
 
-  // GEMINI PATH
-  if (config.provider === 'GEMINI') {
-    const chat = geminiClient.chats.create({
-      model: GEMINI_MODEL_REASONING,
-      config: { systemInstruction },
-      history: history.slice(0, -1).map(msg => ({
-        role: msg.role,
-        parts: [{ text: msg.text }]
-      })),
-    });
-
-    const lastMessage = history[history.length - 1];
-    const result = await chat.sendMessage({ message: lastMessage.text });
-    return result.text || "";
-  }
-
-  // CUSTOM PATH
-  // Reconstruct full conversation for stateless API
   const messages = [
     { role: "system", content: systemInstruction },
     ...history.map(m => ({ role: m.role, content: m.text }))
@@ -362,16 +336,6 @@ export const summarizeNodeChat = async (
     This summary will be used as the "Prior Knowledge" context for the NEXT lesson.
   `;
 
-  // GEMINI PATH
-  if (config.provider === 'GEMINI') {
-    const response = await geminiClient.models.generateContent({
-      model: GEMINI_MODEL_FAST,
-      contents: prompt,
-    });
-    return response.text || "Summary generation failed.";
-  }
-
-  // CUSTOM PATH
   return await callOpenAICompatible(
     config,
     [{ role: "user", content: prompt }]
@@ -415,44 +379,6 @@ export const generateNodeQuiz = async (
     - "explanation" (string): Why this answer is correct
   `;
 
-  // GEMINI PATH
-  if (config.provider === 'GEMINI') {
-    const schema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        questions: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              question: { type: Type.STRING },
-              options: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-              },
-              correctAnswer: { type: Type.NUMBER },
-              explanation: { type: Type.STRING }
-            },
-            required: ["question", "options", "correctAnswer", "explanation"]
-          }
-        }
-      },
-      required: ["questions"]
-    };
-
-    const response = await geminiClient.models.generateContent({
-      model: GEMINI_MODEL_FAST,
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: schema,
-      },
-    });
-    const result = JSON.parse(response.text || "{}");
-    return result.questions || [];
-  }
-
-  // CUSTOM PATH
   const responseText = await callOpenAICompatible(
     config,
     [
@@ -461,6 +387,7 @@ export const generateNodeQuiz = async (
     ],
     'json_object'
   );
+  
   const result = cleanAndParseJson<{ questions: QuizQuestion[] }>(responseText);
   return result.questions || [];
 };

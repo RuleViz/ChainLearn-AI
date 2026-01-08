@@ -12,10 +12,14 @@ import { startSession, endSession, updateSessionMessageCount, accumulateSessionT
 import { ExpertRouterService } from './services/expertService';
 
 const DEFAULT_CONFIG: AIConfig = {
-  provider: 'GEMINI',
-  baseUrl: 'https://api.openai.com/v1',
+  provider: 'OPENAI',
+  baseUrl: '',
   apiKey: '',
-  modelId: 'gpt-3.5-turbo'
+  modelId: '',
+  granularity: 'standard',
+  providers: [],
+  activeProviderId: '',
+  activeModelId: '',
 };
 
 const App: React.FC = () => {

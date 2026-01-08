@@ -49,13 +49,60 @@ export type PlanResponse = {
   }>;
 }
 
-export type AIProvider = 'GEMINI' | 'OPENAI';
+export type AIProvider = 'OPENAI';
+
+// 学习链细度等级
+export type LearningGranularity = 'brief' | 'standard' | 'detailed';
+
+// 预设服务商类型
+export type PresetProviderId = 
+  | 'openai'      // OpenAI
+  | 'deepseek'    // DeepSeek
+  | 'moonshot'    // Moonshot (Kimi)
+  | 'custom';     // 自定义 OpenAI 兼容
+
+// 服务商配置
+export interface ProviderConfig {
+  id: string;                    // 唯一标识
+  name: string;                  // 显示名称
+  baseUrl: string;               // API 基础 URL
+  apiKey: string;                // API Key
+  models: ModelConfig[];         // 可用模型列表
+  enabled: boolean;              // 是否启用
+  isPreset: boolean;             // 是否为预设服务商
+  presetId?: PresetProviderId;   // 预设服务商 ID
+}
+
+// 模型配置
+export interface ModelConfig {
+  id: string;                    // 模型 ID
+  name: string;                  // 显示名称
+  maxTokens?: number;            // 最大 token 数
+  isDefault?: boolean;           // 是否为默认模型
+}
+
+// 预设服务商信息
+export interface PresetProvider {
+  id: PresetProviderId;
+  name: string;
+  baseUrl: string;
+  defaultModels: ModelConfig[];
+  description: string;
+  website: string;
+  apiKeyUrl?: string;            // API Key 获取链接
+}
 
 export interface AIConfig {
-  provider: AIProvider;
-  baseUrl: string;
-  apiKey: string;
-  modelId: string;
+  provider: AIProvider;          // 兼容旧版
+  baseUrl: string;               // 兼容旧版
+  apiKey: string;                // 兼容旧版
+  modelId: string;               // 兼容旧版
+  granularity: LearningGranularity;
+  
+  // 新版多服务商配置
+  providers: ProviderConfig[];   // 所有服务商配置
+  activeProviderId: string;      // 当前激活的服务商 ID
+  activeModelId: string;         // 当前激活的模型 ID
 }
 
 export interface LearningSession {
