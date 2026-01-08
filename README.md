@@ -89,11 +89,7 @@ Unlike traditional learning tools, ChainLearn goes beyond simple text. It uses a
    ```
 
 3. **Configure Environment**
-   Copy `.env.example` to `.env.local` and set your API Key:
-   ```bash
-   # .env.local
-   GEMINI_API_KEY=your_api_key_here
-   ```
+   Launch the application, click the **Settings** icon ⚙️ in the top right corner, and configure your API Key directly in the UI. All data is stored locally in your browser.
 
 4. **Start Development Server**
    ```bash

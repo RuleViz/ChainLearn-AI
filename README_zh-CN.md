@@ -89,11 +89,7 @@
    ```
 
 3. **配置环境**
-   复制 `.env.example` 到 `.env.local` 并配置您的 API Key:
-   ```bash
-   # .env.local
-   GEMINI_API_KEY=your_api_key_here
-   ```
+   启动应用后，点击右上角的 **设置** 图标 ⚙️，直接在界面中配置您的 API Key。所有配置仅保存在您的浏览器本地。
 
 4. **启动开发服务器**
    ```bash
