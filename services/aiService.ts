@@ -23,7 +23,7 @@ const getActiveProviderAndModel = (config: AIConfig): { provider: ProviderConfig
 };
 
 // --- OpenAI 兼容 API 调用 ---
-export const callOpenAICompatible = async (
+export const callAI = async (
   config: AIConfig,
   messages: Array<{ role: string; content: string }>,
   responseFormat?: 'json_object' | 'text'
@@ -59,25 +59,41 @@ export const callOpenAICompatible = async (
     temperature: 0.7,
   };
 
-  if (responseFormat === 'json_object') {
-    body.response_format = { type: "json_object" };
-  }
+  // 先尝试带 JSON mode，如果失败则回退
+  const tryRequest = async (useJsonMode: boolean): Promise<string> => {
+    const requestBody = { ...body };
+    if (useJsonMode && responseFormat === 'json_object') {
+      requestBody.response_format = { type: "json_object" };
+    }
 
-  try {
     const response = await fetch(url, {
       method: "POST",
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
+      // 如果是 JSON mode 不支持的错误，返回特殊标记让外层重试
+      if (useJsonMode && (errorText.includes('json') || errorText.includes('Json') || errorText.includes('thinking'))) {
+        throw new Error('JSON_MODE_NOT_SUPPORTED');
+      }
       throw new Error(`API 错误 (${response.status}): ${errorText}`);
     }
 
     const data = await response.json();
     return data.choices?.[0]?.message?.content || "";
-  } catch (error) {
+  };
+
+  try {
+    // 先尝试带 JSON mode
+    return await tryRequest(responseFormat === 'json_object');
+  } catch (error: any) {
+    // 如果 JSON mode 不支持，回退到普通模式
+    if (error.message === 'JSON_MODE_NOT_SUPPORTED') {
+      console.log('JSON mode not supported, falling back to text mode');
+      return await tryRequest(false);
+    }
     console.error("API 调用错误:", error);
     throw error;
   }
@@ -152,7 +168,7 @@ export const generateLearningPlan = async (topic: string, config: AIConfig, expe
        Each chapter should represent a distinct phase of learning.
        Return ONLY valid JSON with a "plan" array containing objects with "title" and "description".`;
 
-  const responseText = await callOpenAICompatible(
+  const responseText = await callAI(
     config,
     [
       { role: "system", content: "You are a helpful assistant that outputs JSON." },
@@ -202,7 +218,7 @@ export const initializeNodeChat = async (
 
        Return ONLY valid JSON with fields: "initialMessage" (string) and "microSteps" (string array).`;
 
-  const responseText = await callOpenAICompatible(
+  const responseText = await callAI(
     config,
     [
       { role: "system", content: "You are a helpful tutor that outputs JSON." },
@@ -212,7 +228,6 @@ export const initializeNodeChat = async (
   );
   return cleanAndParseJson(responseText);
 };
-
 
 export const sendChatMessage = async (
   title: string,
@@ -240,14 +255,14 @@ export const sendChatMessage = async (
     IMPORTANT - Math Formulas:
     When explaining mathematical concepts, equations, or formulas, you MUST use LaTeX notation:
     - Use $...$ for inline math (e.g., $E = mc^2$, $\\frac{a}{b}$, $\\sqrt{x}$)
-    - Use $$...$$ for block/display math (centered, larger formulas)
+    - Use $...$ for block/display math (centered, larger formulas)
     
     Examples:
     - Inline: The quadratic formula is $x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$
     - Block:
-    $$
+    $
     \\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}
-    $$
+    $
     
     Common LaTeX commands:
     - Fractions: \\frac{numerator}{denominator}
@@ -317,7 +332,7 @@ export const sendChatMessage = async (
     ...history.map(m => ({ role: m.role, content: m.text }))
   ];
 
-  return await callOpenAICompatible(config, messages);
+  return await callAI(config, messages);
 };
 
 export const summarizeNodeChat = async (
@@ -340,7 +355,7 @@ export const summarizeNodeChat = async (
     This summary will be used as the "Prior Knowledge" context for the NEXT lesson.
   `;
 
-  return await callOpenAICompatible(
+  return await callAI(
     config,
     [{ role: "user", content: prompt }]
   );
@@ -383,7 +398,7 @@ export const generateNodeQuiz = async (
     - "explanation" (string): Why this answer is correct
   `;
 
-  const responseText = await callOpenAICompatible(
+  const responseText = await callAI(
     config,
     [
       { role: "system", content: "You are a helpful assistant that creates quiz questions and outputs JSON." },

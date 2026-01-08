@@ -1,15 +1,31 @@
 <div align="center">
-<img width="180" height="180" alt="ChainLearn AI Logo" src="logo.png" />
+  <img src="public/logo.png" width="120" height="120" alt="ChainLearn AI Logo" />
+  <h1>ChainLearn AI</h1>
+  <p>
+    <b>下一代交互式 AI 学习平台</b>
+  </p>
+  <p>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License" /></a>
+    <img src="https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react" alt="React 19" />
+    <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Vite-6.0-646CFF?style=flat-square&logo=vite" alt="Vite" />
+  </p>
+  <p>
+    <a href="README.md">🇺🇸 English Documentation</a> •
+    <a href="#-核心功能">核心功能</a> •
+    <a href="#-快速开始">快速开始</a> •
+    <a href="#-项目结构">项目结构</a> •
+    <a href="#-开源协议">开源协议</a>
+  </p>
 </div>
 
-# ChainLearn AI - 智能学习平台
+---
 
-🇺🇸 [English Documentation](README.md)
+## 📖 简介
 
-一个基于 AI 的交互式学习平台，通过节点式对话系统和可视化工具，帮助用户高效掌握知识。
+**ChainLearn AI** 是一个基于人工智能的交互式学习平台，致力于通过**节点式对话系统**和**实时可视化工具**，帮助用户高效、系统地掌握复杂知识。
 
-View your app in AI Studio: https://ai.studio/apps/drive/1Q3SKXH21XXO0Dp9thuukmGxSfMO1Qyia
-
+与传统学习工具不同，ChainLearn 不仅提供信息，更通过智能专家路由和自研图表引擎，将抽象概念具象化，让学习过程如同探索知识地图般清晰有趣。
 
 ## 🌟 创新特性
 
@@ -59,92 +75,75 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Q3SKXH21XXO0Dp9thuukmG
 
 ## 🚀 快速开始
 
-**前置要求:** Node.js
+**前置要求:** Node.js 18+
 
-1. 安装依赖:
+1. **克隆仓库**
+   ```bash
+   git clone https://github.com/yourusername/chainlearn-ai.git
+   cd chainlearn-ai
+   ```
+
+2. **安装依赖**
    ```bash
    npm install
    ```
 
-2. 配置 API Key:
-   - 在 [.env.local](.env.local) 中设置 `GEMINI_API_KEY`
-   - 或在应用设置中配置自定义 AI 提供商
+3. **配置环境**
+   复制 `.env.example` 到 `.env.local` 并配置您的 API Key:
+   ```bash
+   # .env.local
+   GEMINI_API_KEY=your_api_key_here
+   ```
 
-3. 启动应用:
+4. **启动开发服务器**
    ```bash
    npm run dev
    ```
 
-4. 构建生产版本:
-   ```bash
-   npm run build
-   ```
-
-## 📖 使用指南
-
-### 开始学习
-1. 在首页输入你想学习的主题（例如："React Hooks"、"量子物理"）
-2. AI 会自动生成学习路径，分解为多个节点
-3. 逐个节点进行交互式学习
-
-### 触发可视化图表
-询问需要可视化的问题，例如：
-- "解释 TCP 三次握手流程"
-- "React 渲染机制是什么"
-- "快速排序算法的步骤"
-
-AI 会自动生成相应的图表帮助理解。
-
-### 使用测验功能
-1. 在学习节点中与 AI 对话（至少 2 轮）
-2. 点击"知识自测"按钮
-3. 完成测验并查看得分
-4. 根据反馈决定是否继续学习或进入下一节点
-
 ## 📁 项目结构
 
-```
+```bash
 chainlearn-ai/
-├── components/          # React 组件
-│   ├── Calendar.tsx     # 学习日历
-│   ├── LearningHistory.tsx  # 学习历史
-│   ├── MermaidBlock.tsx     # Mermaid 图表渲染
-│   ├── QuizModal.tsx        # 测验界面
-│   ├── SimpleMarkdown.tsx   # Markdown 渲染
+├── 📂 components/          # React 组件库
+│   ├── Calendar.tsx      # 学习日历
+│   ├── LearningHistory.tsx # 学习历史
+│   ├── MermaidBlock.tsx  # 自研图表渲染组件
+│   ├── QuizModal.tsx     # 测验交互界面
 │   └── ...
-├── services/           # 业务逻辑
-│   ├── geminiService.ts     # AI 服务
-│   ├── learningStats.ts     # 学习统计
-│   └── expertService.ts     # 专家路由
-├── docs/              # 文档
-│   ├── new-features.md      # 新功能说明
-│   ├── testing-guide.md     # 测试指南
-│   └── ...
-├── App.tsx            # 主应用
-├── types.ts           # TypeScript 类型定义
-└── ...
+├── 📂 services/           # 核心业务逻辑
+│   ├── geminiService.ts  # AI 服务集成
+│   ├── learningStats.ts  # 学习数据分析
+│   └── expertService.ts  # 专家路由系统
+├── 📂 docs/               # 开发文档
+├── App.tsx               # 应用入口
+└── types.ts              # TypeScript 类型定义
 ```
 
-## 🎨 技术栈
+## 🗺️ 路线图 (Roadmap)
 
-- **前端框架**: React 19 + TypeScript
-- **构建工具**: Vite
-- **AI 服务**: Google Gemini API / OpenAI Compatible API
-- **可视化**: Mermaid.js
-- **图标**: Lucide React
-- **样式**: Tailwind CSS
+- [x] 基础对话与学习链生成
+- [x] AI 专家路由系统
+- [x] Mermaid 图表渲染引擎
+- [x] 学习历史与日历
+- [ ] 导出学习笔记 (PDF/Markdown)
+- [ ] 社区分享功能
+- [ ] 移动端原生适配
 
-## 📚 文档
+## 🤝 贡献指南
 
-- [新功能说明](docs/new-features.md) - 详细的功能介绍
-- [测试指南](docs/testing-guide.md) - 如何测试新功能
-- [更新日志](CHANGELOG.md) - 版本更新记录
-- [系统架构](docs/systemArchitecture.md) - 技术架构说明
+欢迎提交 Issue 和 Pull Request！详细贡献指南请参考 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-## 🤝 贡献
+## 📄 开源协议 (License)
 
-欢迎提交 Issue 和 Pull Request！
+本项目采用 **Apache License 2.0** 许可证。
 
-## 📄 许可证
+这是一个对开发者非常友好且广泛使用的协议，旨在鼓励代码的分享和推广，同时保护作者的署名权。
 
-MIT License
+- ✅ **自由使用**：您可以免费使用、修改、分发本软件，包括商业用途。
+- ✅ **广泛兼容**：易于与其他开源项目集成。
+- ⚠️ **必须署名**：如果您分发本软件或其衍生作品，**必须**保留原作者的版权声明和许可证声明（不能删除出处）。
+- 🛡️ **免责声明**：作者不承担使用本软件产生的任何法律责任。
+
+简而言之，您可以放心使用和魔改，只需要在说明中保留 "ChainLearn AI" 的版权声明即可。
+
+详细条款请参阅 [LICENSE](LICENSE) 文件。

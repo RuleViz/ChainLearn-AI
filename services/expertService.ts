@@ -1,6 +1,6 @@
 import { AIConfig, Expert } from "../types";
 import { getEnabledExperts, getExpertForRouting, getExpertById } from "../src/expert";
-import { callOpenAICompatible } from './geminiService';
+import { callAI } from './aiService';
 
 export class ExpertRouterService {
   private aiconfig: AIConfig;
@@ -37,7 +37,7 @@ ${experts.map(expert => `- ID: ${expert.id}
 
   private async callOpenAI(prompt: string): Promise<string> {
     try {
-      return await callOpenAICompatible(
+      return await callAI(
         this.aiconfig,
         [
           {

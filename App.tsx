@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BrainCircuit, Play, Send, Sparkles, BookOpen, ChevronRight, CheckCircle2, Loader2, Settings, Calendar as CalendarIcon, ClipboardCheck, ArrowLeft, BookMarked, Bookmark } from 'lucide-react';
-import { generateLearningPlan, initializeNodeChat, sendChatMessage, summarizeNodeChat, generateNodeQuiz } from './services/geminiService';
+import { generateLearningPlan, initializeNodeChat, sendChatMessage, summarizeNodeChat, generateNodeQuiz } from './services/aiService';
 import { LearningNode, NodeStatus, WorkflowState, ChatMessage, AIConfig, Expert } from './types';
 import { NodeList } from './components/NodeList';
 import { SimpleMarkdown } from './components/SimpleMarkdown';

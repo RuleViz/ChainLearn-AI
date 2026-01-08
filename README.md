@@ -1,15 +1,31 @@
 <div align="center">
-<img width="180" height="180" alt="ChainLearn AI Logo" src="logo.png" />
+  <img src="public/logo.png" width="120" height="120" alt="ChainLearn AI Logo" />
+  <h1>ChainLearn AI</h1>
+  <p>
+    <b>Next-Gen Interactive AI Learning Platform</b>
+  </p>
+  <p>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License" /></a>
+    <img src="https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react" alt="React 19" />
+    <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Vite-6.0-646CFF?style=flat-square&logo=vite" alt="Vite" />
+  </p>
+  <p>
+    <a href="README_zh-CN.md">🇨🇳 中文文档</a> •
+    <a href="#-key-features">Key Features</a> •
+    <a href="#-quick-start">Quick Start</a> •
+    <a href="#-project-structure">Structure</a> •
+    <a href="#-license">License</a>
+  </p>
 </div>
 
-# ChainLearn AI - Intelligent Learning Platform
+---
 
-🇨🇳 [中文文档](README_zh-CN.md)
+## 📖 Introduction
 
-An AI-powered interactive learning platform that helps users efficiently master knowledge through node-based dialogue systems and visualization tools.
+**ChainLearn AI** is an AI-powered interactive learning platform designed to help users master complex knowledge efficiently through a **node-based dialogue system** and **real-time visualization tools**.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1Q3SKXH21XXO0Dp9thuukmGxSfMO1Qyia
-
+Unlike traditional learning tools, ChainLearn goes beyond simple text. It uses an intelligent expert router and a custom-built diagram engine to visualize abstract concepts, making the learning process as clear and engaging as exploring a knowledge map.
 
 ## 🌟 Innovative Features
 
@@ -59,92 +75,74 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Q3SKXH21XXO0Dp9thuukmG
 
 ## 🚀 Quick Start
 
-**Prerequisites:** Node.js
+**Prerequisites:** Node.js 18+
 
-1. Install dependencies:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/chainlearn-ai.git
+   cd chainlearn-ai
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. Configure API Key:
-   - Set `GEMINI_API_KEY` in [.env.local](.env.local)
-   - Or configure a custom AI provider in the application settings
+3. **Configure Environment**
+   Copy `.env.example` to `.env.local` and set your API Key:
+   ```bash
+   # .env.local
+   GEMINI_API_KEY=your_api_key_here
+   ```
 
-3. Start the application:
+4. **Start Development Server**
    ```bash
    npm run dev
    ```
 
-4. Build for production:
-   ```bash
-   npm run build
-   ```
-
-## 📖 User Guide
-
-### Start Learning
-1. Enter the topic you want to learn on the homepage (e.g., "React Hooks", "Quantum Physics")
-2. AI will automatically generate a learning path, broken down into multiple nodes
-3. Engage in interactive learning node by node
-
-### Trigger Visualizations
-Ask questions that require visualization, such as:
-- "Explain the TCP 3-way handshake process"
-- "What is the React rendering mechanism?"
-- "Steps of the Quick Sort algorithm"
-
-AI will automatically generate corresponding charts to aid understanding.
-
-### Take Quizzes
-1. Chat with the AI in a learning node (at least 2 turns)
-2. Click the "Test Knowledge" button
-3. Complete the quiz and view your score
-4. Decide whether to review or proceed to the next node based on feedback
-
 ## 📁 Project Structure
 
-```
+```bash
 chainlearn-ai/
-├── components/          # React Components
-│   ├── Calendar.tsx     # Learning Calendar
-│   ├── LearningHistory.tsx  # Learning History
-│   ├── MermaidBlock.tsx     # Mermaid Chart Rendering
-│   ├── QuizModal.tsx        # Quiz Interface
-│   ├── SimpleMarkdown.tsx   # Markdown Rendering
+├── 📂 components/          # React Components
+│   ├── Calendar.tsx      # Learning Calendar
+│   ├── LearningHistory.tsx # Learning History
+│   ├── MermaidBlock.tsx  # Custom Chart Renderer
+│   ├── QuizModal.tsx     # Quiz Interface
 │   └── ...
-├── services/           # Business Logic
-│   ├── geminiService.ts     # AI Service
-│   ├── learningStats.ts     # Learning Stats
-│   └── expertService.ts     # Expert Routing
-├── docs/              # Documentation
-│   ├── new-features.md      # New Features Guide
-│   ├── testing-guide.md     # Testing Guide
-│   └── ...
-├── App.tsx            # Main Application
-├── types.ts           # TypeScript Type Definitions
-└── ...
+├── 📂 services/           # Core Business Logic
+│   ├── geminiService.ts  # AI Integration
+│   ├── learningStats.ts  # Data Analytics
+│   └── expertService.ts  # Expert Routing System
+├── 📂 docs/               # Documentation
+├── App.tsx               # Main Application
+└── types.ts              # TypeScript Types
 ```
 
-## 🎨 Tech Stack
+## 🗺️ Roadmap
 
-- **Frontend Framework**: React 19 + TypeScript
-- **Build Tool**: Vite
-- **AI Service**: Google Gemini API / OpenAI Compatible API
-- **Visualization**: Mermaid.js
-- **Icons**: Lucide React
-- **Styling**: Tailwind CSS
+- [x] Basic Dialogue & Chain Generation
+- [x] AI Expert Router System
+- [x] Mermaid Diagram Rendering Engine
+- [x] Learning History & Calendar
+- [ ] Export Notes (PDF/Markdown)
+- [ ] Community Sharing
+- [ ] Mobile App Adaptation
 
-## 📚 Documentation
+## 🤝 Contributing
 
-- [New Features](docs/new-features.md) - Detailed feature introduction
-- [Testing Guide](docs/testing-guide.md) - How to test new functions
-- [Changelog](CHANGELOG.md) - Version update records
-- [System Architecture](docs/systemArchitecture.md) - Technical architecture description
-
-## 🤝 Contribution
-
-Issues and Pull Requests are welcome!
+Issues and Pull Requests are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
 ## 📄 License
 
-MIT License
+This project is licensed under the **Apache License 2.0**.
+
+This is a permissive license widely used in the open-source community, designed to encourage adoption and innovation while ensuring proper attribution.
+
+- ✅ **Free Use**: You may freely use, modify, and distribute this software, including for commercial purposes.
+- ✅ **Compatible**: Easy to integrate with other open-source projects.
+- ⚠️ **Attribution Required**: You **must** retain the original copyright and license notice when distributing this software or derivative works.
+
+In short, you are free to use and modify this project as long as you keep the "ChainLearn AI" copyright notice.
+
+See the [LICENSE](LICENSE) file for details.
