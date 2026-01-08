@@ -7,7 +7,7 @@ interface SimpleMarkdownProps {
   content: string;
 }
 
-// 1. Component for Syntax-highlighted style Code Blocks
+// 1. Component for Syntax-highlighted style Code Blocks - OpenAI 风格
 const CodeBlock: React.FC<{ language: string; code: string }> = ({ language, code }) => {
   const [copied, setCopied] = useState(false);
 
@@ -18,22 +18,22 @@ const CodeBlock: React.FC<{ language: string; code: string }> = ({ language, cod
   };
 
   return (
-    <div className="my-4 rounded-lg overflow-hidden border border-slate-700 bg-slate-950/50 shadow-sm group">
-      <div className="flex items-center justify-between px-4 py-2 bg-slate-900/80 border-b border-slate-800">
+    <div className="my-4 rounded-xl overflow-hidden border border-neutral-200 bg-neutral-50 shadow-sm group">
+      <div className="flex items-center justify-between px-4 py-2 bg-neutral-100 border-b border-neutral-200">
         <div className="flex items-center gap-2">
-           <Terminal className="w-3.5 h-3.5 text-slate-500" />
-           <span className="text-xs font-mono text-slate-400 lowercase">{language || 'code'}</span>
+           <Terminal className="w-3.5 h-3.5 text-neutral-400" />
+           <span className="text-xs font-mono text-neutral-500 lowercase">{language || 'code'}</span>
         </div>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100"
+          className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-neutral-700 transition-colors opacity-0 group-hover:opacity-100"
         >
           {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-          <span>{copied ? 'Copied!' : 'Copy'}</span>
+          <span>{copied ? '已复制' : '复制'}</span>
         </button>
       </div>
-      <div className="p-4 overflow-x-auto custom-scrollbar">
-        <pre className="text-sm font-mono leading-relaxed text-slate-200">
+      <div className="p-4 overflow-x-auto custom-scrollbar bg-neutral-900">
+        <pre className="text-sm font-mono leading-relaxed text-neutral-100">
           <code>{code}</code>
         </pre>
       </div>
@@ -56,26 +56,25 @@ const MathBlock: React.FC<{ formula: string; displayMode: boolean }> = ({ formul
       />
     );
   } catch (e) {
-    return <span className="text-red-400">{formula}</span>;
+    return <span className="text-red-500">{formula}</span>;
   }
 };
 
-// 3. Component for Inline Text (Bold, Code, Math, etc.)
+// 3. Component for Inline Text (Bold, Code, Math, etc.) - OpenAI 风格
 const InlineText: React.FC<{ text: string }> = ({ text }) => {
   if (!text) return null;
 
-  // Match: **bold**, `code`, $math$ (but not $$)
   const parts = text.split(/(\*\*.*?\*\*|`.*?`|\$(?!\$).*?\$(?!\$))/g);
 
   return (
     <span>
       {parts.map((part: string, index: number) => {
         if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-          return <strong key={index} className="font-bold text-sky-200">{part.slice(2, -2)}</strong>;
+          return <strong key={index} className="font-semibold text-neutral-900">{part.slice(2, -2)}</strong>;
         }
         if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
           return (
-            <code key={index} className="bg-slate-800/80 text-sky-300 px-1.5 py-0.5 rounded text-[0.9em] font-mono mx-0.5 border border-slate-700/50 align-middle">
+            <code key={index} className="bg-neutral-100 text-neutral-800 px-1.5 py-0.5 rounded text-[0.9em] font-mono mx-0.5 border border-neutral-200 align-middle">
               {part.slice(1, -1)}
             </code>
           );
@@ -90,7 +89,7 @@ const InlineText: React.FC<{ text: string }> = ({ text }) => {
   );
 };
 
-// 4. Table Component
+// 4. Table Component - OpenAI 风格
 const Table: React.FC<{ rows: string[][] }> = ({ rows }) => {
   if (rows.length < 2) return null;
 
@@ -99,13 +98,13 @@ const Table: React.FC<{ rows: string[][] }> = ({ rows }) => {
 
   return (
     <div className="my-4 overflow-x-auto">
-      <table className="w-full border-collapse border border-slate-700">
+      <table className="w-full border-collapse border border-neutral-200 rounded-lg overflow-hidden">
         <thead>
-          <tr className="bg-slate-800/50">
+          <tr className="bg-neutral-50">
             {headers.map((header: string, idx: number) => (
               <th
                 key={idx}
-                className="border border-slate-700 px-4 py-2 text-left text-sky-200 font-semibold"
+                className="border border-neutral-200 px-4 py-2 text-left text-neutral-900 font-semibold text-sm"
               >
                 <InlineText text={header.trim()} />
               </th>
@@ -114,11 +113,11 @@ const Table: React.FC<{ rows: string[][] }> = ({ rows }) => {
         </thead>
         <tbody>
           {dataRows.map((row: string[], rowIdx: number) => (
-            <tr key={rowIdx} className={rowIdx % 2 === 0 ? 'bg-slate-950/30' : 'bg-slate-900/20'}>
+            <tr key={rowIdx} className={rowIdx % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
               {row.map((cell: string, cellIdx: number) => (
                 <td
                   key={cellIdx}
-                  className="border border-slate-700 px-4 py-2 text-slate-300"
+                  className="border border-neutral-200 px-4 py-2 text-neutral-700 text-sm"
                 >
                   <InlineText text={cell.trim()} />
                 </td>
@@ -131,31 +130,31 @@ const Table: React.FC<{ rows: string[][] }> = ({ rows }) => {
   );
 };
 
-// 5. Helper function to render a single line
+// 5. Helper function to render a single line - OpenAI 风格
 const renderLine = (line: string, lineIndex: number): React.ReactNode => {
   const trimmed = line.trim();
   if (!trimmed) return null;
 
   if (line.startsWith('##### ')) {
-    return <h5 key={lineIndex} className="text-sm font-bold text-slate-200 mt-4 mb-1"><InlineText text={line.replace('##### ', '')} /></h5>;
+    return <h5 key={lineIndex} className="text-sm font-semibold text-neutral-800 mt-4 mb-1"><InlineText text={line.replace('##### ', '')} /></h5>;
   }
   if (line.startsWith('#### ')) {
-    return <h4 key={lineIndex} className="text-base font-bold text-sky-50 mt-5 mb-2"><InlineText text={line.replace('#### ', '')} /></h4>;
+    return <h4 key={lineIndex} className="text-base font-semibold text-neutral-900 mt-5 mb-2"><InlineText text={line.replace('#### ', '')} /></h4>;
   }
   if (line.startsWith('### ')) {
-    return <h3 key={lineIndex} className="text-lg font-bold text-sky-100 mt-6 mb-2"><InlineText text={line.replace('### ', '')} /></h3>;
+    return <h3 key={lineIndex} className="text-lg font-semibold text-neutral-900 mt-6 mb-2"><InlineText text={line.replace('### ', '')} /></h3>;
   }
   if (line.startsWith('## ')) {
-    return <h2 key={lineIndex} className="text-xl font-bold text-white mt-8 mb-4 border-b border-slate-700 pb-2"><InlineText text={line.replace('## ', '')} /></h2>;
+    return <h2 key={lineIndex} className="text-xl font-semibold text-neutral-900 mt-8 mb-4 border-b border-neutral-200 pb-2"><InlineText text={line.replace('## ', '')} /></h2>;
   }
   if (line.startsWith('# ')) {
-    return <h1 key={lineIndex} className="text-2xl font-extrabold text-white mt-8 mb-4"><InlineText text={line.replace('# ', '')} /></h1>;
+    return <h1 key={lineIndex} className="text-2xl font-bold text-neutral-900 mt-8 mb-4"><InlineText text={line.replace('# ', '')} /></h1>;
   }
 
   if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
     return (
       <div key={lineIndex} className="flex items-start ml-2 mb-1">
-        <span className="mr-3 text-sky-500 mt-1.5 text-[0.6rem]">●</span>
+        <span className="mr-3 text-neutral-400 mt-2 text-[0.5rem]">●</span>
         <span><InlineText text={trimmed.replace(/^[-*]\s/, '')} /></span>
       </div>
     );
@@ -164,7 +163,7 @@ const renderLine = (line: string, lineIndex: number): React.ReactNode => {
   if (trimmed.match(/^\d+\.\s/)) {
     return (
       <div key={lineIndex} className="flex items-start ml-2 mb-1">
-        <span className="mr-2 text-emerald-500 font-mono text-sm font-bold min-w-[1.2rem]">{trimmed.match(/^\d+\./)?.[0]}</span>
+        <span className="mr-2 text-neutral-500 font-mono text-sm font-medium min-w-[1.2rem]">{trimmed.match(/^\d+\./)?.[0]}</span>
         <span><InlineText text={trimmed.replace(/^\d+\.\s/, '')} /></span>
       </div>
     );
@@ -172,7 +171,7 @@ const renderLine = (line: string, lineIndex: number): React.ReactNode => {
 
   if (line.startsWith('> ')) {
     return (
-      <div key={lineIndex} className="border-l-4 border-sky-600 pl-4 py-1 my-4 bg-slate-800/30 italic text-slate-400">
+      <div key={lineIndex} className="border-l-4 border-neutral-300 pl-4 py-1 my-4 bg-neutral-50 italic text-neutral-600 rounded-r">
         <InlineText text={line.replace(/^>\s/, '')} />
       </div>
     );
@@ -187,11 +186,10 @@ const renderLine = (line: string, lineIndex: number): React.ReactNode => {
 
 // 6. Main Parser Component
 export const SimpleMarkdown: React.FC<SimpleMarkdownProps> = ({ content }) => {
-  // First split by block math $$...$$, then by code blocks
   const mathAndCodeBlocks = content.split(/(\$\$[\s\S]*?\$\$|```[\s\S]*?```)/g);
 
   return (
-    <div className="text-slate-300 leading-7 space-y-2">
+    <div className="text-neutral-700 leading-7 space-y-2">
       {mathAndCodeBlocks.map((block: string, blockIndex: number) => {
         // Block math: $$...$$
         if (block.startsWith('$$') && block.endsWith('$$')) {
@@ -204,7 +202,6 @@ export const SimpleMarkdown: React.FC<SimpleMarkdownProps> = ({ content }) => {
           const language = lines[0].replace(/^```/, '').trim();
           const code = lines.slice(1, -1).join('\n');
           
-          // Check if it's a diagram (mermaid or our custom format)
           if (language === 'mermaid' || language === 'diagram') {
             return <DiagramBlock key={blockIndex} code={code} />;
           }

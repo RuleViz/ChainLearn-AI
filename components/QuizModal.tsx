@@ -27,7 +27,6 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
 
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
-  const allAnswered = answeredQuestions.every(a => a);
 
   const handleSelectAnswer = (optionIndex: number) => {
     if (showExplanation) return;
@@ -76,18 +75,18 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
   const isPerfect = score === questions.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-white border border-neutral-200 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-6 border-b border-neutral-200 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-white">知识自测</h2>
-            <p className="text-sm text-slate-400 mt-1">{nodeTitle}</p>
+            <h2 className="text-xl font-semibold text-neutral-900">知识自测</h2>
+            <p className="text-sm text-neutral-500 mt-1">{nodeTitle}</p>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -99,13 +98,13 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
             <>
               {/* Progress */}
               <div className="mb-6">
-                <div className="flex justify-between text-sm text-slate-400 mb-2">
-                  <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-                  <span>Score: {score}/{answeredQuestions.filter(a => a).length}</span>
+                <div className="flex justify-between text-sm text-neutral-500 mb-2">
+                  <span>第 {currentQuestionIndex + 1} 题，共 {questions.length} 题</span>
+                  <span>得分: {score}/{answeredQuestions.filter(a => a).length}</span>
                 </div>
-                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-sky-500 transition-all duration-300"
+                    className="h-full bg-neutral-900 transition-all duration-300"
                     style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
                   />
                 </div>
@@ -113,7 +112,7 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
 
               {/* Question */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-white mb-4">{currentQuestion.question}</h3>
+                <h3 className="text-lg font-medium text-neutral-900 mb-4">{currentQuestion.question}</h3>
                 
                 <div className="space-y-3">
                   {currentQuestion.options.map((option, index) => {
@@ -121,19 +120,19 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
                     const isCorrect = index === currentQuestion.correctAnswer;
                     const showResult = showExplanation;
 
-                    let buttonClass = "w-full text-left p-4 rounded-lg border-2 transition-all ";
+                    let buttonClass = "w-full text-left p-4 rounded-xl border-2 transition-all ";
                     
                     if (!showResult) {
                       buttonClass += isSelected
-                        ? "border-sky-500 bg-sky-500/10 text-white"
-                        : "border-slate-700 bg-slate-800/50 text-slate-300 hover:border-slate-600";
+                        ? "border-neutral-900 bg-neutral-50 text-neutral-900"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300";
                     } else {
                       if (isCorrect) {
-                        buttonClass += "border-emerald-500 bg-emerald-500/10 text-emerald-300";
+                        buttonClass += "border-green-500 bg-green-50 text-green-800";
                       } else if (isSelected && !isCorrect) {
-                        buttonClass += "border-red-500 bg-red-500/10 text-red-300";
+                        buttonClass += "border-red-500 bg-red-50 text-red-800";
                       } else {
-                        buttonClass += "border-slate-700 bg-slate-800/30 text-slate-400";
+                        buttonClass += "border-neutral-200 bg-neutral-50 text-neutral-400";
                       }
                     }
 
@@ -146,8 +145,8 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
                       >
                         <div className="flex items-center justify-between">
                           <span>{option}</span>
-                          {showResult && isCorrect && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-                          {showResult && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-red-400" />}
+                          {showResult && isCorrect && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                          {showResult && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-red-600" />}
                         </div>
                       </button>
                     );
@@ -157,9 +156,9 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
 
               {/* Explanation */}
               {showExplanation && (
-                <div className="mb-6 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
-                  <h4 className="text-sm font-semibold text-sky-400 mb-2">解析</h4>
-                  <p className="text-slate-300 text-sm leading-relaxed">{currentQuestion.explanation}</p>
+                <div className="mb-6 p-4 bg-neutral-50 border border-neutral-200 rounded-xl">
+                  <h4 className="text-sm font-semibold text-neutral-700 mb-2">解析</h4>
+                  <p className="text-neutral-600 text-sm leading-relaxed">{currentQuestion.explanation}</p>
                 </div>
               )}
 
@@ -169,14 +168,14 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
                   <button
                     onClick={handleSubmitAnswer}
                     disabled={selectedAnswer === null}
-                    className="flex-1 py-3 bg-sky-600 hover:bg-sky-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-lg font-medium transition-colors"
+                    className="flex-1 py-3 bg-neutral-900 hover:bg-neutral-800 disabled:bg-neutral-100 disabled:text-neutral-400 text-white rounded-xl font-medium transition-colors"
                   >
                     提交答案
                   </button>
                 ) : (
                   <button
                     onClick={handleNextQuestion}
-                    className="flex-1 py-3 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-medium transition-colors"
+                    className="flex-1 py-3 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl font-medium transition-colors"
                   >
                     {isLastQuestion ? '查看结果' : '下一题'}
                   </button>
@@ -187,22 +186,22 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
             /* Results */
             <div className="text-center py-8">
               <div className={`w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center ${
-                isPerfect ? 'bg-emerald-500/10' : scorePercentage >= 60 ? 'bg-sky-500/10' : 'bg-slate-800'
+                isPerfect ? 'bg-green-50' : scorePercentage >= 60 ? 'bg-neutral-100' : 'bg-neutral-50'
               }`}>
                 <Trophy className={`w-12 h-12 ${
-                  isPerfect ? 'text-emerald-400' : scorePercentage >= 60 ? 'text-sky-400' : 'text-slate-600'
+                  isPerfect ? 'text-green-600' : scorePercentage >= 60 ? 'text-neutral-600' : 'text-neutral-400'
                 }`} />
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-2">
+              <h3 className="text-2xl font-semibold text-neutral-900 mb-2">
                 {isPerfect ? '完美掌握！' : scorePercentage >= 60 ? '不错的表现！' : '继续加油！'}
               </h3>
               
-              <div className="text-4xl font-bold text-sky-400 mb-4">
+              <div className="text-4xl font-bold text-neutral-900 mb-4">
                 {score} / {questions.length}
               </div>
 
-              <p className="text-slate-400 mb-8">
+              <p className="text-neutral-500 mb-8">
                 {isPerfect 
                   ? '你已经完全掌握了这个知识点！' 
                   : scorePercentage >= 60 
@@ -213,14 +212,14 @@ export const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, questions
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={handleRestart}
-                  className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl transition-colors"
                 >
                   <RefreshCw className="w-4 h-4" />
                   <span>重新测试</span>
                 </button>
                 <button
                   onClick={handleClose}
-                  className="px-6 py-3 bg-sky-600 hover:bg-sky-500 text-white rounded-lg transition-colors"
+                  className="px-6 py-3 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl transition-colors"
                 >
                   完成
                 </button>

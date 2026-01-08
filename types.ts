@@ -195,4 +195,33 @@ export interface Expert {
   name: string;        // 专家名称 (如 "Dr. Sarah Chen")
   description: string; // 简短介绍 (用于AI上下文)
   systemPrompt: string; // AI系统提示词
+  avatar?: string;     // 头像 emoji 或图标
+  isBuiltIn?: boolean; // 是否为内置专家
+  enabled?: boolean;   // 是否启用
+}
+
+// 专家配置（用于存储用户自定义）
+export interface ExpertConfig {
+  experts: Expert[];
+  defaultExpertId: string;
+}
+
+// 笔记本相关类型
+export interface Note {
+  id: string;
+  content: string;           // 笔记内容（原始消息文本）
+  title?: string;            // 笔记标题（可选）
+  topic: string;             // 来源学习主题
+  nodeTitle: string;         // 来源节点标题
+  sourceRole: 'user' | 'model'; // 消息来源角色
+  createdAt: string;         // 创建时间
+  updatedAt: string;         // 更新时间
+  tags: string[];            // 标签
+  isFavorite: boolean;       // 是否收藏
+}
+
+export interface NotebookConfig {
+  notes: Note[];
+  sortBy: 'createdAt' | 'updatedAt' | 'topic';
+  sortOrder: 'asc' | 'desc';
 }

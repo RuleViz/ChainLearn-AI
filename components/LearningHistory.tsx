@@ -24,15 +24,11 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
   }, [isOpen]);
 
   const handleContinue = (session: LearningSession) => {
-    console.log('尝试继续学习，会话ID:', session.id);
-    console.log('会话数据:', session);
     const state = loadWorkflowState(session.id);
-    console.log('加载的状态:', state);
     if (state) {
       onContinueLearning(state, session.id);
       onClose();
     } else {
-      console.error('无法加载学习状态');
       alert('无法加载学习状态，可能数据已损坏或未保存');
     }
   };
@@ -93,17 +89,17 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 rounded-2xl border border-slate-700 w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl border border-neutral-200 w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-800">
+        <div className="flex items-center justify-between p-4 border-b border-neutral-200">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-500/20 rounded-lg">
-              <Clock className="w-5 h-5 text-indigo-400" />
+            <div className="p-2 bg-neutral-100 rounded-lg">
+              <Clock className="w-5 h-5 text-neutral-600" />
             </div>
-            <h2 className="text-lg font-semibold text-white">学习管理</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">学习管理</h2>
             {isSelectionMode && selectedIds.size > 0 && (
-              <span className="text-sm text-slate-400">
+              <span className="text-sm text-neutral-500">
                 已选择 {selectedIds.size} 项
               </span>
             )}
@@ -115,14 +111,14 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                   <>
                     <button
                       onClick={toggleSelectAll}
-                      className="px-3 py-1.5 text-sm text-indigo-400 hover:bg-indigo-500/20 rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
                     >
                       {selectedIds.size === sessions.length ? '取消全选' : '全选'}
                     </button>
                     {selectedIds.size > 0 && (
                       <button
                         onClick={handleBatchDelete}
-                        className="px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                        className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
                         删除选中
                       </button>
@@ -132,7 +128,7 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                         setIsSelectionMode(false);
                         setSelectedIds(new Set());
                       }}
-                      className="px-3 py-1.5 text-sm text-slate-400 hover:bg-slate-700 rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 rounded-lg transition-colors"
                     >
                       取消
                     </button>
@@ -141,13 +137,13 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                   <>
                     <button
                       onClick={() => setIsSelectionMode(true)}
-                      className="px-3 py-1.5 text-sm text-slate-400 hover:bg-slate-700 rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 rounded-lg transition-colors"
                     >
                       批量管理
                     </button>
                     <button
                       onClick={handleClearAll}
-                      className="px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       清除所有
                     </button>
@@ -157,7 +153,7 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
             )}
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+              className="p-2 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -166,7 +162,7 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
 
         <div className="flex-1 overflow-auto p-4">
           {sessions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-slate-500">
+            <div className="flex flex-col items-center justify-center h-full text-neutral-400">
               <Clock className="w-16 h-16 mb-4 opacity-50" />
               <p>还没有学习记录</p>
             </div>
@@ -175,12 +171,12 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
               {sessions.map(session => (
                 <div
                   key={session.id}
-                  className={`bg-slate-800/50 rounded-xl p-4 border transition-all ${
+                  className={`bg-white rounded-xl p-4 border transition-all ${
                     isSelectionMode
                       ? selectedIds.has(session.id)
-                        ? 'border-indigo-500 bg-indigo-500/10'
-                        : 'border-slate-700'
-                      : 'border-slate-700 hover:border-indigo-500/50 cursor-pointer'
+                        ? 'border-neutral-900 bg-neutral-50'
+                        : 'border-neutral-200'
+                      : 'border-neutral-200 hover:border-neutral-400 cursor-pointer'
                   }`}
                   onClick={() => {
                     if (isSelectionMode) {
@@ -196,8 +192,8 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                         <div
                           className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
                             selectedIds.has(session.id)
-                              ? 'bg-indigo-500 border-indigo-500'
-                              : 'border-slate-600'
+                              ? 'bg-neutral-900 border-neutral-900'
+                              : 'border-neutral-300'
                           }`}
                         >
                           {selectedIds.has(session.id) && (
@@ -205,23 +201,23 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                           )}
                         </div>
                       )}
-                      <h3 className="text-white font-medium line-clamp-2 flex-1">
+                      <h3 className="text-neutral-900 font-medium line-clamp-2 flex-1">
                         {session.sessionTitle}
                       </h3>
                     </div>
                     {!isSelectionMode && (
                       <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                         {session.completed ? (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                          <CheckCircle2 className="w-5 h-5 text-green-600" />
                         ) : (
-                          <Circle className="w-5 h-5 text-amber-400" />
+                          <Circle className="w-5 h-5 text-amber-500" />
                         )}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDelete(session.id);
                           }}
-                          className="p-1 text-slate-500 hover:text-red-400 hover:bg-red-500/20 rounded transition-colors"
+                          className="p-1 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
                           title="删除"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -230,7 +226,7 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                     )}
                   </div>
 
-                  <div className="space-y-2 text-sm text-slate-400">
+                  <div className="space-y-2 text-sm text-neutral-500">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4" />
                       <span>{formatDuration(session.duration)}</span>
@@ -239,7 +235,7 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                       <MessageSquare className="w-4 h-4" />
                       <span>{session.messageCount} 条消息</span>
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-neutral-400">
                       {new Date(session.startTime).toLocaleString('zh-CN')}
                     </div>
                   </div>
@@ -250,7 +246,7 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                         e.stopPropagation();
                         handleContinue(session);
                       }}
-                      className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 rounded-lg transition-colors"
+                      className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors text-sm"
                     >
                       <Play className="w-4 h-4" />
                       <span>{session.completed ? '查看学习' : '继续学习'}</span>
@@ -264,11 +260,11 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
 
         {/* 详情面板 */}
         {selectedSession && !isSelectionMode && (
-          <div className="border-t border-slate-800 p-4 bg-slate-800/30">
+          <div className="border-t border-neutral-200 p-4 bg-neutral-50">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
-                <h3 className="text-white font-medium mb-1">{selectedSession.sessionTitle}</h3>
-                <p className="text-sm text-slate-400">
+                <h3 className="text-neutral-900 font-medium mb-1">{selectedSession.sessionTitle}</h3>
+                <p className="text-sm text-neutral-500">
                   {selectedSession.completed ? '已完成' : '进行中'} · {formatDuration(selectedSession.duration)} · {selectedSession.messageCount} 条消息
                 </p>
               </div>
@@ -276,7 +272,7 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                 {selectedSession.workflowState && (
                   <button
                     onClick={() => handleContinue(selectedSession)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 rounded-lg transition-colors"
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors"
                   >
                     <Play className="w-4 h-4" />
                     <span>{selectedSession.completed ? '查看' : '继续'}</span>
@@ -287,14 +283,14 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
                     handleDelete(selectedSession.id);
                     setSelectedSession(null);
                   }}
-                  className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                  className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   title="删除"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setSelectedSession(null)}
-                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  className="p-1.5 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-200 rounded-lg transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -303,12 +299,12 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
 
             {selectedSession.nodeTitles && selectedSession.nodeTitles.length > 0 && (
               <div className="mb-3">
-                <p className="text-xs text-slate-500 mb-2">学习节点：</p>
+                <p className="text-xs text-neutral-500 mb-2">学习节点：</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedSession.nodeTitles.map((title, idx) => (
                     <span
                       key={idx}
-                      className="px-2 py-1 text-xs bg-slate-700/50 text-slate-300 rounded"
+                      className="px-2 py-1 text-xs bg-neutral-200 text-neutral-700 rounded"
                     >
                       {title}
                     </span>
@@ -319,8 +315,8 @@ export const LearningHistory: React.FC<LearningHistoryProps> = ({ isOpen, onClos
 
             {selectedSession.summary && (
               <div>
-                <p className="text-xs text-slate-500 mb-2">总结：</p>
-                <p className="text-sm text-slate-300">{selectedSession.summary}</p>
+                <p className="text-xs text-neutral-500 mb-2">总结：</p>
+                <p className="text-sm text-neutral-700">{selectedSession.summary}</p>
               </div>
             )}
           </div>

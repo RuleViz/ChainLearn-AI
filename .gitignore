@@ -7,10 +7,30 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build outputs
 dist
 dist-ssr
+build
 *.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+coverage
+.nyc_output
+
+# Environment files
+.env
+.env*.local
+
+# Cache
+.turbo
+.cache
+.parcel-cache
 
 # Editor directories and files
 .vscode/*
@@ -22,6 +42,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Project specific
+metadata.json
 CLAUDE.md
 .claude/
 docs/

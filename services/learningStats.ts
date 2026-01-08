@@ -37,7 +37,7 @@ function saveData(data: StoredData): void {
 
 // 生成唯一ID
 function generateId(): string {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 }
 
 // 开始新会话

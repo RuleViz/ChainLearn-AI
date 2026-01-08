@@ -1,4 +1,6 @@
-/* KaTeX style overrides to prevent layout issues */
+/* OpenAI 风格基础样式 */
+
+/* KaTeX 样式覆盖 - 适配浅色主题 */
 .katex-display {
   margin: 1rem 0 !important;
   overflow-x: auto;
@@ -7,21 +9,19 @@
 
 .katex {
   font-size: 1.1em;
-  color: #e2e8f0;
+  color: #171717;
 }
 
-/* Ensure KaTeX doesn't affect parent container height unexpectedly */
 .katex-html {
   white-space: nowrap;
 }
 
-/* Fix: Prevent KaTeX from breaking flex layouts */
-.katex-display > .katex {
+.katex-display>.katex {
   display: inline-block;
   text-align: center;
 }
 
-/* CRITICAL: Force correct flex layout for chat interface */
+/* Flex 布局修复 */
 .flex-1.flex.flex-col.h-full {
   display: flex !important;
   flex-direction: column !important;
@@ -30,26 +30,136 @@
 .flex-1.overflow-y-auto {
   flex: 1 1 0% !important;
   min-height: 0 !important;
-  order: 0 !important;
 }
 
-/* Ensure input area stays at bottom */
-.p-4.bg-slate-900\/80.border-t {
-  flex-shrink: 0 !important;
-  order: 1 !important;
-}
-
-/* Custom scrollbar for code blocks */
+/* 自定义滚动条 - 极简风格 */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 3px;
+  background: #d4d4d4;
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
+
+/* 输入框聚焦效果 */
+input:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+/* 按钮过渡效果 */
+button {
+  transition: all 0.15s ease;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* 消息气泡动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-bubble {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* 打字机光标效果 */
+@keyframes blink {
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.typing-cursor::after {
+  content: '|';
+  animation: blink 1s infinite;
+  margin-left: 2px;
+  color: #171717;
+}
+
+/* 加载动画 */
+@keyframes pulse-dot {
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.loading-dot {
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* AI 彩色流动渐变动画 */
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* AI 文字彩色渐变效果 - 融入标题 */
+.ai-gradient-text {
+  background: linear-gradient(90deg,
+      #ec4899,
+      #a855f7,
+      #6366f1,
+      #0ea5e9,
+      #06b6d4,
+      #0ea5e9,
+      #6366f1,
+      #a855f7,
+      #ec4899);
+  background-size: 200% 100%;
+  animation: gradient-flow 3s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
