@@ -1,5 +1,5 @@
 <div align="center">
-<img width="180" height="180" alt="ChainLearn AI Logo" src="logo_v2.png" />
+<img width="180" height="180" alt="ChainLearn AI Logo" src="logo.png" />
 </div>
 
 # ChainLearn AI - 智能学习平台
