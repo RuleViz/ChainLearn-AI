@@ -1,4 +1,5 @@
 import { PlanResponse, ChatMessage, AIConfig, Expert, ProviderConfig } from "../types";
+import { Language, getLanguage } from './i18n';
 
 // 获取当前激活的服务商和模型
 const getActiveProviderAndModel = (config: AIConfig): { provider: ProviderConfig | null; modelId: string; baseUrl: string; apiKey: string } => {
@@ -149,19 +150,30 @@ const getGranularityDescription = (granularity: string): string => {
   }
 };
 
-export const generateLearningPlan = async (topic: string, config: AIConfig, expert?: Expert): Promise<PlanResponse> => {
+export const generateLearningPlan = async (topic: string, config: AIConfig, expert?: Expert, language?: Language): Promise<PlanResponse> => {
   const nodeCount = getNodeCountByGranularity(config.granularity || 'standard');
   const granularityDesc = getGranularityDescription(config.granularity || 'standard');
+  const lang = language || getLanguage();
+  
+  // 语言指令
+  const languageInstruction = lang === 'zh' 
+    ? '请使用中文回复。所有学习节点的标题(title)和描述(description)都必须是中文。'
+    : 'Please respond in English. All learning node titles and descriptions must be in English.';
   
   const systemPrompt = expert
     ? `You are ${expert.name}. ${expert.systemPrompt}
 
+       ${languageInstruction}
+       
        Create a structured, step-by-step learning path for the topic: "${topic}".
        Break this down into ${nodeCount} logical chapters (nodes).
        ${granularityDesc}
        Each chapter should represent a distinct phase of learning.
        Return ONLY valid JSON with a "plan" array containing objects with "title" and "description".`
     : `You are an expert curriculum designer.
+       
+       ${languageInstruction}
+       
        Create a structured, step-by-step learning path for the topic: "${topic}".
        Break this down into ${nodeCount} logical chapters (nodes).
        ${granularityDesc}
@@ -184,10 +196,20 @@ export const initializeNodeChat = async (
   description: string,
   previousContext: string,
   config: AIConfig,
-  expert?: Expert
+  expert?: Expert,
+  language?: Language
 ): Promise<{ initialMessage: string; microSteps: string[] }> => {
+  const lang = language || getLanguage();
+  
+  // 语言指令
+  const languageInstruction = lang === 'zh' 
+    ? '请使用中文回复。所有内容（包括欢迎消息和学习目标）都必须是中文。'
+    : 'Please respond in English. All content (including welcome message and learning goals) must be in English.';
+  
   const prompt = expert
     ? `You are ${expert.name}. ${expert.systemPrompt}
+
+       ${languageInstruction}
 
        You are now teaching "${title}".
        Goal: ${description}
@@ -204,6 +226,9 @@ export const initializeNodeChat = async (
 
        Return ONLY valid JSON with fields: "initialMessage" (string) and "microSteps" (string array).`
     : `You are a friendly, expert tutor teaching "${title}".
+       
+       ${languageInstruction}
+       
        Goal: ${description}
 
        Context from previous learning steps:
@@ -234,13 +259,20 @@ export const sendChatMessage = async (
   microSteps: string[],
   history: ChatMessage[],
   config: AIConfig,
-  expert?: Expert
+  expert?: Expert,
+  language?: Language
 ): Promise<string> => {
+  const lang = language || getLanguage();
   const expertIdentity = expert 
     ? `You are ${expert.name}. ${expert.systemPrompt}\n\n` 
     : '';
+  
+  // 语言指令
+  const languageInstruction = lang === 'zh' 
+    ? '\n\nIMPORTANT: You MUST respond in Chinese (中文). All explanations, examples, and conversations must be in Chinese.'
+    : '\n\nIMPORTANT: You MUST respond in English. All explanations, examples, and conversations must be in English.';
     
-  const systemInstruction = `${expertIdentity}You are an expert tutor for the topic: "${title}".
+  const systemInstruction = `${expertIdentity}You are an expert tutor for the topic: "${title}".${languageInstruction}
     
     The structured goals (Micro-steps) for this session are:
     ${microSteps.map(s => `- ${s}`).join('\n')}
@@ -338,13 +370,22 @@ export const sendChatMessage = async (
 export const summarizeNodeChat = async (
   title: string,
   chatHistory: ChatMessage[],
-  config: AIConfig
+  config: AIConfig,
+  language?: Language
 ): Promise<string> => {
+  const lang = language || getLanguage();
   const transcript = chatHistory
     .map(m => `${m.role.toUpperCase()}: ${m.text}`)
     .join('\n');
 
+  // 语言指令
+  const languageInstruction = lang === 'zh' 
+    ? '请使用中文撰写总结。'
+    : 'Please write the summary in English.';
+
   const prompt = `
+    ${languageInstruction}
+    
     Review the following tutoring session about "${title}":
     
     --- START TRANSCRIPT ---
@@ -371,13 +412,22 @@ export interface QuizQuestion {
 export const generateNodeQuiz = async (
   title: string,
   chatHistory: ChatMessage[],
-  config: AIConfig
+  config: AIConfig,
+  language?: Language
 ): Promise<QuizQuestion[]> => {
+  const lang = language || getLanguage();
   const transcript = chatHistory
     .map(m => `${m.role.toUpperCase()}: ${m.text}`)
     .join('\n');
 
+  // 语言指令
+  const languageInstruction = lang === 'zh' 
+    ? '请使用中文生成所有测验问题、选项和解释。'
+    : 'Please generate all quiz questions, options, and explanations in English.';
+
   const prompt = `
+    ${languageInstruction}
+    
     Based on the following tutoring session about "${title}", generate 3-5 multiple choice quiz questions to test the user's understanding.
 
     --- START TRANSCRIPT ---

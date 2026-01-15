@@ -26,7 +26,7 @@ const DEFAULT_CONFIG: AIConfig = {
 };
 
 const App: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [state, setState] = useState<WorkflowState>({
     topic: '',
     nodes: [],
@@ -230,7 +230,7 @@ const App: React.FC = () => {
       // 保存当前专家，供后续对话使用
       setCurrentExpert(selectedExpert);
 
-      const { plan } = await generateLearningPlan(state.topic, aiConfig, selectedExpert);
+      const { plan } = await generateLearningPlan(state.topic, aiConfig, selectedExpert, language);
       const newNodes: LearningNode[] = plan.map((item, idx) => ({
         id: `node-${idx}`,
         title: item.title,
@@ -288,7 +288,8 @@ const App: React.FC = () => {
           currentNode.description,
           contextSummary,
           aiConfig,
-          selectedExpert
+          selectedExpert,
+          language
         );
 
         const firstMsg: ChatMessage = {
@@ -341,7 +342,8 @@ const App: React.FC = () => {
         currentNode.microSteps || [],
         updatedMessages,
         aiConfig,
-        currentExpert // 传入当前专家
+        currentExpert, // 传入当前专家
+        language // 传入当前语言
       );
 
       const aiMsg: ChatMessage = {
@@ -373,7 +375,7 @@ const App: React.FC = () => {
     setIsGeneratingQuiz(true);
 
     try {
-      const questions = await generateNodeQuiz(currentNode.title, currentNode.messages, aiConfig);
+      const questions = await generateNodeQuiz(currentNode.title, currentNode.messages, aiConfig, language);
       updateNode(activeNodeIndex, { quiz: questions });
       setIsQuizOpen(true);
     } catch (error) {
@@ -394,7 +396,7 @@ const App: React.FC = () => {
     updateNode(activeNodeIndex, { status: NodeStatus.SUMMARIZING });
 
     try {
-      const summary = await summarizeNodeChat(currentNode.title, currentNode.messages, aiConfig);
+      const summary = await summarizeNodeChat(currentNode.title, currentNode.messages, aiConfig, language);
 
       updateNode(activeNodeIndex, {
         status: NodeStatus.COMPLETED,
