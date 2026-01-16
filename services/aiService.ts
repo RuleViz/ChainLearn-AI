@@ -30,7 +30,7 @@ export const callAI = async (
   responseFormat?: 'json_object' | 'text'
 ): Promise<string> => {
   const { modelId, baseUrl, apiKey } = getActiveProviderAndModel(config);
-  
+
   if (!apiKey) {
     throw new Error("请先配置 API Key");
   }
@@ -42,7 +42,7 @@ export const callAI = async (
   }
 
   const url = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
-  
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     "Authorization": `Bearer ${apiKey}`,
@@ -154,12 +154,12 @@ export const generateLearningPlan = async (topic: string, config: AIConfig, expe
   const nodeCount = getNodeCountByGranularity(config.granularity || 'standard');
   const granularityDesc = getGranularityDescription(config.granularity || 'standard');
   const lang = language || getLanguage();
-  
+
   // 语言指令
-  const languageInstruction = lang === 'zh' 
+  const languageInstruction = lang === 'zh'
     ? '请使用中文回复。所有学习节点的标题(title)和描述(description)都必须是中文。'
     : 'Please respond in English. All learning node titles and descriptions must be in English.';
-  
+
   const systemPrompt = expert
     ? `You are ${expert.name}. ${expert.systemPrompt}
 
@@ -200,12 +200,12 @@ export const initializeNodeChat = async (
   language?: Language
 ): Promise<{ initialMessage: string; microSteps: string[] }> => {
   const lang = language || getLanguage();
-  
+
   // 语言指令
-  const languageInstruction = lang === 'zh' 
+  const languageInstruction = lang === 'zh'
     ? '请使用中文回复。所有内容（包括欢迎消息和学习目标）都必须是中文。'
     : 'Please respond in English. All content (including welcome message and learning goals) must be in English.';
-  
+
   const prompt = expert
     ? `You are ${expert.name}. ${expert.systemPrompt}
 
@@ -263,15 +263,15 @@ export const sendChatMessage = async (
   language?: Language
 ): Promise<string> => {
   const lang = language || getLanguage();
-  const expertIdentity = expert 
-    ? `You are ${expert.name}. ${expert.systemPrompt}\n\n` 
+  const expertIdentity = expert
+    ? `You are ${expert.name}. ${expert.systemPrompt}\n\n`
     : '';
-  
+
   // 语言指令
-  const languageInstruction = lang === 'zh' 
+  const languageInstruction = lang === 'zh'
     ? '\n\nIMPORTANT: You MUST respond in Chinese (中文). All explanations, examples, and conversations must be in Chinese.'
     : '\n\nIMPORTANT: You MUST respond in English. All explanations, examples, and conversations must be in English.';
-    
+
   const systemInstruction = `${expertIdentity}You are an expert tutor for the topic: "${title}".${languageInstruction}
     
     The structured goals (Micro-steps) for this session are:
@@ -379,7 +379,7 @@ export const summarizeNodeChat = async (
     .join('\n');
 
   // 语言指令
-  const languageInstruction = lang === 'zh' 
+  const languageInstruction = lang === 'zh'
     ? '请使用中文撰写总结。'
     : 'Please write the summary in English.';
 
@@ -421,7 +421,7 @@ export const generateNodeQuiz = async (
     .join('\n');
 
   // 语言指令
-  const languageInstruction = lang === 'zh' 
+  const languageInstruction = lang === 'zh'
     ? '请使用中文生成所有测验问题、选项和解释。'
     : 'Please generate all quiz questions, options, and explanations in English.';
 
@@ -456,7 +456,129 @@ export const generateNodeQuiz = async (
     ],
     'json_object'
   );
-  
+
   const result = cleanAndParseJson<{ questions: QuizQuestion[] }>(responseText);
   return result.questions || [];
+};
+
+// 生成详细学习规划
+export interface DetailedPlanTask {
+  title: string;
+  description: string;
+  type: 'learn' | 'practice' | 'project' | 'review';
+  estimatedHours: number;
+  linkedTopic?: string;
+  checkpoints?: string[];
+}
+
+export interface DetailedPlanPhase {
+  title: string;
+  description: string;
+  duration: string;
+  tasks: DetailedPlanTask[];
+}
+
+export interface DetailedPlanMilestone {
+  title: string;
+  description: string;
+  phaseIndex: number;
+}
+
+export interface GenerateDetailedPlanResponse {
+  title: string;
+  totalDuration: string;
+  phases: DetailedPlanPhase[];
+  milestones: DetailedPlanMilestone[];
+}
+
+export const generateDetailedLearningPlan = async (
+  goal: string,
+  weeklyHours: number,
+  currentLevel: 'beginner' | 'intermediate' | 'advanced',
+  config: AIConfig,
+  expert?: Expert,
+  language?: Language
+): Promise<GenerateDetailedPlanResponse> => {
+  const lang = language || getLanguage();
+
+  const languageInstruction = lang === 'zh'
+    ? '请使用中文回复。所有标题、描述和内容都必须是中文。'
+    : 'Please respond in English. All titles, descriptions and content must be in English.';
+
+  const levelDesc = {
+    beginner: lang === 'zh' ? '完全零基础' : 'complete beginner',
+    intermediate: lang === 'zh' ? '有一定基础' : 'intermediate level',
+    advanced: lang === 'zh' ? '已有较好基础' : 'advanced level'
+  };
+
+  const expertIdentity = expert
+    ? `You are ${expert.name}. ${expert.systemPrompt}\n\n`
+    : '';
+
+  const prompt = `${expertIdentity}${languageInstruction}
+
+You are creating a detailed, actionable learning plan for the following:
+
+**Learning Goal**: "${goal}"
+**Available Time**: ${weeklyHours} hours per week
+**Current Level**: ${levelDesc[currentLevel]}
+
+Create a comprehensive learning plan with the following structure:
+
+1. **Phases**: Break down into 3-6 logical phases, each representing a stage of learning
+2. **Tasks**: Each phase should have 3-6 specific tasks
+3. **Milestones**: Key achievement points across the plan
+
+For each task, specify:
+- Type: "learn" (theory), "practice" (exercises), "project" (hands-on project), or "review" (revision)
+- Estimated hours to complete
+- linkedTopic: A concise topic name that can be used to study in depth (optional)
+- checkpoints: 2-3 concrete checkpoints to verify completion
+
+Make the plan:
+- Realistic based on the weekly time commitment
+- Progressive, building from fundamentals to advanced topics
+- Balanced between theory and practice
+- Include practical projects where applicable
+
+Return ONLY valid JSON with this structure:
+{
+  "title": "Plan title",
+  "totalDuration": "X weeks",
+  "phases": [
+    {
+      "title": "Phase title",
+      "description": "Phase description",
+      "duration": "X weeks",
+      "tasks": [
+        {
+          "title": "Task title",
+          "description": "Task description",
+          "type": "learn|practice|project|review",
+          "estimatedHours": number,
+          "linkedTopic": "optional topic for deep learning",
+          "checkpoints": ["checkpoint 1", "checkpoint 2"]
+        }
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "title": "Milestone title",
+      "description": "Milestone description",
+      "phaseIndex": 0
+    }
+  ]
+}`;
+
+  const responseText = await callAI(
+    config,
+    [
+      { role: "system", content: "You are a helpful assistant that creates detailed learning plans and outputs JSON." },
+      { role: "user", content: prompt }
+    ],
+    'json_object'
+  );
+
+  return cleanAndParseJson<GenerateDetailedPlanResponse>(responseText);
 };

@@ -15,21 +15,21 @@ const translations = {
     confirm: '确认',
     search: '搜索',
     loading: '加载中...',
-    
+
     // 首页
     home_title: '你想学习什么？',
     home_subtitle: '输入一个主题，AI 将为你构建结构化的学习路径',
     home_placeholder: '例如：量子物理、React Hooks、法国大革命...',
     home_ai_configured: '已配置 AI 服务',
     home_ai_not_configured: '请先在设置中配置 AI 服务商',
-    
+
     // 学习状态
     analyzing_topic: '正在分析',
     building_path: '构建学习路径中...',
     generating_outline: '生成学习大纲...',
     summarizing: '总结中...',
     completed: '已完成',
-    
+
     // 节点学习
     section: '第 {0} 节',
     learning_goals: '学习目标',
@@ -41,12 +41,12 @@ const translations = {
     generating_quiz: '生成中...',
     save_to_notebook: '保存到笔记本',
     remove_from_notebook: '从笔记本移除',
-    
+
     // 完成页面
     learning_complete: '学习完成！',
     learning_complete_desc: '你已成功完成 "{0}" 的所有学习节点。AI 已为每个对话生成总结以帮助记忆。',
     start_new_topic: '开始新主题',
-    
+
     // 设置
     settings: '设置',
     settings_provider: 'AI 服务商',
@@ -60,7 +60,7 @@ const translations = {
     granularity_standard_desc: '4-6 个节点，平衡深度',
     granularity_detailed: '详细',
     granularity_detailed_desc: '7-10 个节点，深入学习',
-    
+
     // 服务商
     provider_select: '选择服务商',
     provider_add: '添加服务商',
@@ -70,7 +70,7 @@ const translations = {
     provider_models: '模型列表',
     provider_add_model: '添加模型',
     provider_delete_confirm: '确定删除此服务商？',
-    
+
     // 专家
     expert_management: '专家管理',
     expert_add: '添加专家',
@@ -85,7 +85,7 @@ const translations = {
     expert_reset: '重置为默认',
     expert_reset_all: '重置所有专家',
     expert_delete_confirm: '确定删除此专家？',
-    
+
     // 笔记本
     notebook: '笔记本',
     notebook_empty: '暂无笔记',
@@ -97,21 +97,21 @@ const translations = {
     notebook_delete_selected: '删除选中',
     notebook_select_all: '全选',
     notebook_deselect_all: '取消全选',
-    
+
     // 日历
     calendar: '学习日历',
     calendar_today: '今天',
     calendar_sessions: '次学习',
     calendar_duration: '学习时长',
     calendar_no_data: '暂无学习记录',
-    
+
     // 学习历史
     history: '学习管理',
     history_continue: '继续学习',
     history_delete: '删除记录',
     history_no_sessions: '暂无学习记录',
     history_start_learning: '开始学习新主题',
-    
+
     // 统计
     stats_total_sessions: '总学习次数',
     stats_total_duration: '总学习时长',
@@ -121,7 +121,7 @@ const translations = {
     stats_days: '天',
     stats_minutes: '分钟',
     stats_hours: '小时',
-    
+
     // 测验
     quiz_title: '知识自测',
     quiz_question: '问题',
@@ -133,7 +133,7 @@ const translations = {
     quiz_explanation: '解析',
     quiz_score: '得分',
     quiz_retry: '重新测试',
-    
+
     // 时间格式
     time_just_now: '刚刚',
     time_minutes_ago: '{0} 分钟前',
@@ -143,6 +143,38 @@ const translations = {
     // 语言
     language_zh: '中文',
     language_en: 'English',
+
+    // 学习规划
+    planning: '学习规划',
+    planning_title: '创建学习规划',
+    planning_subtitle: '让 AI 帮你制定长期可执行的学习计划',
+    planning_goal_label: '我想要学习...',
+    planning_goal_placeholder: '例如：三个月内掌握 React 全栈开发',
+    planning_weekly_hours: '每周可投入时间',
+    planning_hours_5: '5小时以下',
+    planning_hours_10: '5-10小时',
+    planning_hours_20: '10-20小时',
+    planning_hours_more: '20小时以上',
+    planning_level: '我的基础',
+    planning_level_beginner: '完全零基础',
+    planning_level_intermediate: '有一定基础',
+    planning_level_advanced: '已有较好基础',
+    planning_create: '开始规划',
+    planning_creating: '正在生成规划...',
+    planning_my_plans: '我的规划',
+    planning_no_plans: '暂无规划',
+    planning_no_plans_desc: '创建你的第一个学习规划',
+    planning_new: '新建规划',
+    planning_progress: '进度',
+    planning_phase: '第 {0} 阶段',
+    planning_task_learn: '学习',
+    planning_task_practice: '练习',
+    planning_task_project: '项目',
+    planning_task_review: '复习',
+    planning_start_learning: '开始学习',
+    planning_estimated_hours: '预计 {0} 小时',
+    planning_remaining_hours: '剩余 {0} 小时',
+    planning_delete_confirm: '确定删除此规划？',
   },
   en: {
     // Common
@@ -156,21 +188,21 @@ const translations = {
     confirm: 'Confirm',
     search: 'Search',
     loading: 'Loading...',
-    
+
     // Home
     home_title: 'What do you want to learn?',
     home_subtitle: 'Enter a topic and AI will build a structured learning path for you',
     home_placeholder: 'e.g., Quantum Physics, React Hooks, French Revolution...',
     home_ai_configured: 'AI service configured',
     home_ai_not_configured: 'Please configure AI provider in settings first',
-    
+
     // Learning status
     analyzing_topic: 'Analyzing',
     building_path: 'Building learning path...',
     generating_outline: 'Generating outline...',
     summarizing: 'Summarizing...',
     completed: 'Completed',
-    
+
     // Node learning
     section: 'Section {0}',
     learning_goals: 'Learning Goals',
@@ -182,12 +214,12 @@ const translations = {
     generating_quiz: 'Generating...',
     save_to_notebook: 'Save to Notebook',
     remove_from_notebook: 'Remove from Notebook',
-    
+
     // Completion page
     learning_complete: 'Learning Complete!',
     learning_complete_desc: 'You have successfully completed all learning nodes for "{0}". AI has generated summaries for each conversation to help with retention.',
     start_new_topic: 'Start New Topic',
-    
+
     // Settings
     settings: 'Settings',
     settings_provider: 'AI Provider',
@@ -201,7 +233,7 @@ const translations = {
     granularity_standard_desc: '4-6 nodes, balanced depth',
     granularity_detailed: 'Detailed',
     granularity_detailed_desc: '7-10 nodes, in-depth learning',
-    
+
     // Provider
     provider_select: 'Select Provider',
     provider_add: 'Add Provider',
@@ -211,7 +243,7 @@ const translations = {
     provider_models: 'Models',
     provider_add_model: 'Add Model',
     provider_delete_confirm: 'Delete this provider?',
-    
+
     // Expert
     expert_management: 'Expert Management',
     expert_add: 'Add Expert',
@@ -226,7 +258,7 @@ const translations = {
     expert_reset: 'Reset to Default',
     expert_reset_all: 'Reset All Experts',
     expert_delete_confirm: 'Delete this expert?',
-    
+
     // Notebook
     notebook: 'Notebook',
     notebook_empty: 'No notes yet',
@@ -238,21 +270,21 @@ const translations = {
     notebook_delete_selected: 'Delete Selected',
     notebook_select_all: 'Select All',
     notebook_deselect_all: 'Deselect All',
-    
+
     // Calendar
     calendar: 'Learning Calendar',
     calendar_today: 'Today',
     calendar_sessions: 'sessions',
     calendar_duration: 'Duration',
     calendar_no_data: 'No learning records',
-    
+
     // History
     history: 'Learning History',
     history_continue: 'Continue',
     history_delete: 'Delete',
     history_no_sessions: 'No learning sessions',
     history_start_learning: 'Start learning a new topic',
-    
+
     // Stats
     stats_total_sessions: 'Total Sessions',
     stats_total_duration: 'Total Duration',
@@ -262,7 +294,7 @@ const translations = {
     stats_days: 'days',
     stats_minutes: 'min',
     stats_hours: 'hrs',
-    
+
     // Quiz
     quiz_title: 'Knowledge Quiz',
     quiz_question: 'Question',
@@ -274,7 +306,7 @@ const translations = {
     quiz_explanation: 'Explanation',
     quiz_score: 'Score',
     quiz_retry: 'Retry',
-    
+
     // Time format
     time_just_now: 'Just now',
     time_minutes_ago: '{0} min ago',
@@ -284,6 +316,38 @@ const translations = {
     // Language
     language_zh: '中文',
     language_en: 'English',
+
+    // Planning
+    planning: 'Learning Plan',
+    planning_title: 'Create Learning Plan',
+    planning_subtitle: 'Let AI help you create a long-term actionable learning plan',
+    planning_goal_label: 'I want to learn...',
+    planning_goal_placeholder: 'e.g., Master React full-stack development in 3 months',
+    planning_weekly_hours: 'Weekly Available Time',
+    planning_hours_5: 'Under 5 hours',
+    planning_hours_10: '5-10 hours',
+    planning_hours_20: '10-20 hours',
+    planning_hours_more: 'Over 20 hours',
+    planning_level: 'My Current Level',
+    planning_level_beginner: 'Complete Beginner',
+    planning_level_intermediate: 'Some Experience',
+    planning_level_advanced: 'Advanced',
+    planning_create: 'Create Plan',
+    planning_creating: 'Generating plan...',
+    planning_my_plans: 'My Plans',
+    planning_no_plans: 'No Plans Yet',
+    planning_no_plans_desc: 'Create your first learning plan',
+    planning_new: 'New Plan',
+    planning_progress: 'Progress',
+    planning_phase: 'Phase {0}',
+    planning_task_learn: 'Learn',
+    planning_task_practice: 'Practice',
+    planning_task_project: 'Project',
+    planning_task_review: 'Review',
+    planning_start_learning: 'Start Learning',
+    planning_estimated_hours: 'Est. {0} hours',
+    planning_remaining_hours: '{0} hours remaining',
+    planning_delete_confirm: 'Delete this plan?',
   }
 };
 

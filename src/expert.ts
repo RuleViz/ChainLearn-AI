@@ -82,8 +82,18 @@ export const BUILTIN_EXPERTS: Expert[] = [
     avatar: '🔬',
     isBuiltIn: true,
     enabled: true
+  },
+  {
+    id: 'prof-planner',
+    name: 'Prof. Planning Coach',
+    description: '学习规划专家，擅长制定长期学习路线、分解目标、设置里程碑、规划时间表',
+    systemPrompt: 'You are Prof. Planning Coach, an expert in creating detailed, actionable learning plans. You excel at breaking down complex learning goals into manageable phases, creating realistic timelines based on available time, setting meaningful milestones, recommending practical resources and projects, and balancing theory learning with hands-on practice. You always create plans that are specific, measurable, achievable, relevant, and time-bound (SMART).',
+    avatar: '📋',
+    isBuiltIn: true,
+    enabled: true
   }
 ];
+
 
 const STORAGE_KEY = 'chainlearn_experts';
 
@@ -95,20 +105,20 @@ export const getExpertConfig = (): ExpertConfig => {
       const config = JSON.parse(saved) as ExpertConfig;
       // 合并内置专家（确保新增的内置专家也能显示）
       const savedBuiltInIds = config.experts.filter(e => e.isBuiltIn).map(e => e.id);
-      
+
       // 添加新的内置专家
       const newBuiltIns = BUILTIN_EXPERTS.filter(e => !savedBuiltInIds.includes(e.id));
       if (newBuiltIns.length > 0) {
         config.experts = [...config.experts, ...newBuiltIns];
         saveExpertConfig(config);
       }
-      
+
       return config;
     } catch (e) {
       console.error('Failed to parse expert config:', e);
     }
   }
-  
+
   // 返回默认配置
   return {
     experts: [...BUILTIN_EXPERTS],

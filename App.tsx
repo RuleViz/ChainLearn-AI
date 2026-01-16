@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BrainCircuit, Play, Send, Sparkles, BookOpen, ChevronRight, CheckCircle2, Loader2, Settings, Calendar as CalendarIcon, ClipboardCheck, ArrowLeft, BookMarked, Bookmark } from 'lucide-react';
+import { BrainCircuit, Play, Send, Sparkles, BookOpen, ChevronRight, CheckCircle2, Loader2, Settings, Calendar as CalendarIcon, ClipboardCheck, ArrowLeft, BookMarked, Bookmark, LayoutList } from 'lucide-react';
 import { generateLearningPlan, initializeNodeChat, sendChatMessage, summarizeNodeChat, generateNodeQuiz } from './services/aiService';
 import { LearningNode, NodeStatus, WorkflowState, ChatMessage, AIConfig, Expert } from './types';
+import { LearningPlan, PlanCreationInput } from './planningTypes';
 import { NodeList } from './components/NodeList';
 import { SimpleMarkdown } from './components/SimpleMarkdown';
 import { SettingsModal } from './components/SettingsModal';
@@ -9,9 +10,14 @@ import { Calendar } from './components/Calendar';
 import { LearningHistory } from './components/LearningHistory';
 import { QuizModal } from './components/QuizModal';
 import { Notebook } from './components/Notebook';
+import { PlanningHome } from './components/PlanningHome';
+import { PlanCreator } from './components/PlanCreator';
+import { PlanDetail } from './components/PlanDetail';
 import { startSession, endSession, updateSessionMessageCount, accumulateSessionTime, saveWorkflowState } from './services/learningStats';
 import { addNote, findNoteByContent, deleteNoteByContent } from './services/notebookService';
+import { loadPlans, createPlan, deletePlan, getPlanById } from './services/planningService';
 import { ExpertRouterService } from './services/expertService';
+import { getExpertById } from './src/expert';
 import { useTranslation } from './contexts/LanguageContext';
 
 const DEFAULT_CONFIG: AIConfig = {
@@ -69,6 +75,13 @@ const App: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const currentSessionIdRef = useRef<string | null>(null);
+
+  // 规划相关状态
+  type PlanningView = 'none' | 'home' | 'creator' | 'detail';
+  const [planningView, setPlanningView] = useState<PlanningView>('none');
+  const [plans, setPlans] = useState<LearningPlan[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [isCreatingPlan, setIsCreatingPlan] = useState(false);
 
   // 检查消息是否已保存到笔记本
   const isMessageSaved = (msg: ChatMessage): boolean => {
@@ -448,7 +461,67 @@ const App: React.FC = () => {
 
     // 清除专家状态
     setCurrentExpert(undefined);
+
+    // 重置规划视图
+    setPlanningView('none');
   };
+
+  // ========== 规划功能 ==========
+
+  // 打开规划首页
+  const handleOpenPlanning = () => {
+    setPlans(loadPlans());
+    setPlanningView('home');
+  };
+
+  // 创建规划
+  const handleCreatePlan = async (input: PlanCreationInput) => {
+    setIsCreatingPlan(true);
+    try {
+      const expert = getExpertById('prof-planner');
+      const newPlan = await createPlan(input, aiConfig, expert, language);
+      setPlans(loadPlans());
+      setSelectedPlanId(newPlan.id);
+      setPlanningView('detail');
+    } catch (error) {
+      console.error('Failed to create plan:', error);
+    } finally {
+      setIsCreatingPlan(false);
+    }
+  };
+
+  // 选择规划
+  const handleSelectPlan = (planId: string) => {
+    setSelectedPlanId(planId);
+    setPlanningView('detail');
+  };
+
+  // 更新规划
+  const handlePlanUpdate = (updatedPlan: LearningPlan) => {
+    setPlans(loadPlans());
+  };
+
+  // 删除规划
+  const handleDeletePlan = (planId: string) => {
+    if (window.confirm(t('planning_delete_confirm'))) {
+      deletePlan(planId);
+      setPlans(loadPlans());
+      setPlanningView('home');
+    }
+  };
+
+  // 从规划跳转到学习链
+  const handleStartLearningFromPlan = (topic: string) => {
+    setPlanningView('none');
+    setState(prev => ({ ...prev, topic }));
+    // 触发学习开始
+    setTimeout(() => {
+      handleStartLearning();
+    }, 100);
+  };
+
+  // 获取选中的规划
+  const selectedPlan = selectedPlanId ? getPlanById(selectedPlanId) : null;
 
   const activeNode = state.activeNodeIndex >= 0 && state.activeNodeIndex < state.nodes.length
     ? state.nodes[state.activeNodeIndex]
@@ -556,8 +629,35 @@ const App: React.FC = () => {
         {/* Content */}
         <main className="flex-1 overflow-hidden flex flex-col relative bg-neutral-50">
 
+          {/* 规划视图 */}
+          {planningView === 'home' && (
+            <PlanningHome
+              plans={plans}
+              onCreateNew={() => setPlanningView('creator')}
+              onSelectPlan={handleSelectPlan}
+            />
+          )}
+
+          {planningView === 'creator' && (
+            <PlanCreator
+              onBack={() => setPlanningView('home')}
+              onCreatePlan={handleCreatePlan}
+              isCreating={isCreatingPlan}
+            />
+          )}
+
+          {planningView === 'detail' && selectedPlan && (
+            <PlanDetail
+              plan={selectedPlan}
+              onBack={() => setPlanningView('home')}
+              onPlanUpdate={handlePlanUpdate}
+              onStartLearning={handleStartLearningFromPlan}
+              onDeletePlan={handleDeletePlan}
+            />
+          )}
+
           {/* Initial State: Input - OpenAI 风格 */}
-          {state.nodes.length === 0 && !state.isGeneratingPlan && (
+          {planningView === 'none' && state.nodes.length === 0 && !state.isGeneratingPlan && (
             <div className="flex-1 flex flex-col items-center justify-center p-4">
               <div className="max-w-xl w-full text-center space-y-8">
                 <div className="space-y-3">
@@ -587,6 +687,18 @@ const App: React.FC = () => {
                       <Play className="w-5 h-5 fill-current" />
                     </button>
                   </div>
+                </div>
+
+                {/* 规划入口 */}
+                <div className="pt-4 border-t border-neutral-200">
+                  <button
+                    onClick={handleOpenPlanning}
+                    className="flex items-center gap-2 mx-auto text-neutral-600 hover:text-neutral-900 transition-colors"
+                  >
+                    <LayoutList className="w-5 h-5" />
+                    <span className="font-medium">{t('planning')}</span>
+                    <span className="text-neutral-400">- {t('planning_subtitle')}</span>
+                  </button>
                 </div>
 
                 {state.error && (
