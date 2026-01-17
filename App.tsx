@@ -579,14 +579,18 @@ const App: React.FC = () => {
                 <ArrowLeft className="w-5 h-5" />
               </button>
             )}
-            <div className="flex items-center gap-2">
+            <button
+              onClick={handleBackToHome}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+              title="返回首页"
+            >
               <div className="w-8 h-8 flex items-center justify-center">
                 <img src="/logo.png" alt="ChainLearn Logo" className="w-8 h-8 rounded-lg object-contain" />
               </div>
               <h1 className="font-semibold text-lg tracking-tight text-neutral-900">
                 ChainLearn <span className="ai-gradient-text">AI</span>
               </h1>
-            </div>
+            </button>
           </div>
 
           <div className="flex items-center gap-2">
